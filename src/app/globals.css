@@ -19,12 +19,6 @@ body {
   color: var(--fg);
 }
 
-/* Scroll offset for article headings to prevent flushing to the top when navigating */
-article h2,
-article h3 {
-  scroll-margin-top: 6rem; /* 96px offset, matches the sticky top-24 of the TOC */
-}
-
 /* Code & Highlight.js premium styling overrides */
 .prose pre {
   background-color: #0d1117 !important; /* GitHub dark color theme */
