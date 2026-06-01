@@ -1,0 +1,59 @@
+@import "tailwindcss";
+@import "tailwindcss/theme" theme(reference);
+@plugin "@tailwindcss/typography";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-serif: "Iowan Old Style BT", Georgia, "Times New Roman", serif;
+}
+
+:root {
+  --bg: #ffffff;
+  --fg: #282828;
+  --fg-muted: #676767;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* Code & Highlight.js premium styling overrides */
+.prose pre {
+  background-color: #0d1117 !important; /* GitHub dark color theme */
+  border: 1px solid #21262d;
+  padding: 1.25rem !important;
+  border-radius: 0.5rem !important;
+  overflow-x: auto !important;
+}
+
+.prose pre code {
+  background-color: transparent !important;
+  color: #c9d1d9 !important;
+  font-size: 13.5px !important;
+  line-height: 1.6 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+
+/* Remove tailwind prose default backticks */
+.prose code::before {
+  content: "" !important;
+}
+.prose code::after {
+  content: "" !important;
+}
+
+/* Inline code styling */
+.prose :not(pre) > code {
+  background-color: #f3f4f6 !important;
+  color: #282828 !important;
+  padding: 0.2rem 0.4rem !important;
+  border-radius: 0.25rem !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+

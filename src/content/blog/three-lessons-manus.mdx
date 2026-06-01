@@ -2,7 +2,8 @@ export const frontmatter = {
   title: "Three Lessons I've Learned at Manus",
   date: "2025-12-22",
   author: "Ivan Leo",
-  description: "Lessons learnt from going from zero to $100M ARR in 8 months."
+  description: "Lessons learnt from going from zero to $100M ARR in 8 months.",
+  cover: "/images/three-lessons-manus/manus-desk.jpg",
 }
 
 I joined Manus on July 27th. Just under five months later, on December 17th, we announced that we had crossed [$100M in ARR](https://manus.im/blog/manus-100m-arr) in 8 months after launch — the fastest startup to ever reach that milestone.
@@ -34,7 +35,7 @@ When things move that fast, you learn a few things. Here are three lessons that 
 2. Prototypes over Plans
 3. Don't Pigeonhole Yourself
 
-### Your Responsibility doesn't end when you ship
+**Your Responsibility doesn't end when you ship**
 
 It's tempting to think your job is done once the feature is live. Code works, tests pass, PR merged—time to move on. But that's only half the job.
 
@@ -42,7 +43,7 @@ When I shipped Mail Manus, I didn't just push code and walk away. I filmed a [de
 
 When building out the new Stripe integration , I put my own money on the line. Not test mode transactions—real charges on my personal credit card to verify that when Manus built a website with payments, actual money moved correctly.
 
-<img src="/images/three-lessons-manus/stripe-integration.webp" alt="Stripe Integration" className="rounded-xl my-6 w-full max-w-lg" />
+<img src="/images/three-lessons-manus/stripe-integration.webp" alt="Stripe Integration" />
 
 But the less obvious part of ownership is internal. I sat with people from GTM and marketing to understand where they got confused. I watched them try to use the product.
 
@@ -50,7 +51,7 @@ As the developer, you know the system inside out—but someone in another depart
 
 Your responsibility extends from the first commit to the last user who touches the feature. The code is just the beginning.
 
-### Prototypes over Plans
+**Prototypes over Plans**
 
 On my first day—a Friday—I was asked to build a demo for triggering Manus via email. My first instinct was to hack it together with a script. My boss, 潘潘, pushed back: if it's not real, what's the point?
 
@@ -60,7 +61,7 @@ And that really set the tone for everything that followed. By putting a working 
 
 The same "ship it and see" approach shaped file suggestions. The first version worked, but the UX was painful: upload a file, wait for confirmation, then watch it process in a sequential loop. Seven seconds of staring at a spinner. It felt broken.
 
-<img src="/images/three-lessons-manus/file-uploads.gif" alt="File Upload" className="rounded-xl my-6 w-full max-w-lg" />
+<img src="/images/three-lessons-manus/file-uploads.gif" alt="File Upload" />
 
 So I spent a few days reworking the entire flow to make it feel instant. We also used the feature for discovery: when you uploaded slides, videos, or websites, the model would surface specific suggestions based on the content type. The result felt snappy, and users liked it.
 
@@ -70,7 +71,7 @@ Sometimes you find the model can't get the code exactly where you need it. So yo
 
 Too much scaffolding constrains what the model can do. Too little and it flails. Finding that balance is a huge part of AI engineering, and you can only find it by building prototypes fast and iterating quickly.
 
-### Don't Pidgeonhole Yourself
+**Don't pigeonhole yourself**
 
 About a week after file suggestions launched, we released an API for customers who wanted to automate their manus workflows.
 
