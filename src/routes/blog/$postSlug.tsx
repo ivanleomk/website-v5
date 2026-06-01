@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { lazy, Suspense } from 'react'
 import { InteractiveCounter, ColorPaletteVisualizer } from '../../components/mdx-components'
 import { MDXProvider } from '@mdx-js/react'
@@ -18,12 +18,20 @@ export const Route = createFileRoute('/blog/$postSlug')({
     const path = `../../content/blog/${slug}.mdx`
     
     if (!(path in postsGlob)) {
-      throw new Error(`Post "${slug}" not found`)
+      return {
+        notFound: true,
+        frontmatter: {
+          title: 'Post Deleted',
+          date: new Date().toISOString().split('T')[0],
+          description: 'This post has been deleted or moved.'
+        }
+      }
     }
     
     // Import the MDX module to read its frontmatter at build time / load time
     const module = await postsGlob[path]() as any
     return {
+      notFound: false,
       frontmatter: module.frontmatter || {
         title: slug,
         date: new Date().toISOString().split('T')[0],
@@ -36,16 +44,47 @@ export const Route = createFileRoute('/blog/$postSlug')({
 
 function PostReaderComponent() {
   const { postSlug } = Route.useParams()
-  const { frontmatter } = Route.useLoaderData()
+  const { frontmatter, notFound } = Route.useLoaderData()
 
   // Dynamically resolve the MDX component based on the slug parameter
   const MdxContent = lazy(() => {
+    if (notFound) {
+      return Promise.resolve({ default: () => null })
+    }
     const loaderFn = postsGlob[`../../content/blog/${postSlug}.mdx`] as () => Promise<any>
     if (!loaderFn) {
       throw new Error(`Post not found: ${postSlug}`)
     }
     return loaderFn()
   })
+
+  if (notFound) {
+    return (
+      <main id="main" className="post animate-fade-in px-6 py-24 text-center space-y-6 min-h-[60vh] flex flex-col justify-center items-center">
+        <div className="space-y-2">
+          <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#282828] dark:text-zinc-100">
+            404
+          </h1>
+          <p className="font-sans text-[15px] font-semibold text-slate-500 dark:text-zinc-400">
+            Post not found
+          </p>
+        </div>
+        
+        <p className="font-sans text-[14px] text-[#676767] dark:text-zinc-400 max-w-xs mx-auto leading-relaxed">
+          The page at <code className="bg-slate-100 dark:bg-zinc-900 px-1.5 py-0.5 rounded text-[13px] text-[#282828] dark:text-zinc-200">/blog/{postSlug}</code> is not available.
+        </p>
+        
+        <div className="pt-4">
+          <Link 
+            to="/"
+            className="inline-flex items-center gap-1.5 font-sans text-[14px] font-semibold text-[#676767] hover:text-[#282828] dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors border-b border-transparent hover:border-current pb-0.5"
+          >
+            <span>Back to Homepage</span>
+          </Link>
+        </div>
+      </main>
+    )
+  }
 
   // Determine the cover image for the post if available
   const hasCover = postSlug === 'three-lessons-manus'
