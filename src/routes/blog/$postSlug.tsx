@@ -12,9 +12,12 @@ const mdxComponents = {
 // A dictionary of all MDX files in content/blog
 const postsGlob = import.meta.glob('../../content/blog/*.mdx')
 // Eagerly import raw MDX strings to parse headings dynamically
-const rawPosts = import.meta.glob('../../content/blog/*.mdx', { query: '?raw', eager: true }) as Record<string, { default: string }>
+const rawPosts = import.meta.glob('../../content/blog/*.mdx', { query: '?raw', eager: true }) as Record<string, any>
 
-function parseHeadings(markdown: string) {
+function parseHeadings(markdown: any) {
+  if (typeof markdown !== 'string') {
+    return []
+  }
   const lines = markdown.split('\n')
   const headings: { text: string; id: string; level: number }[] = []
   
@@ -58,7 +61,12 @@ export const Route = createFileRoute('/blog/$postSlug')({
     }
     
     const module = await postsGlob[path]() as any
-    const rawContent = rawPosts[path]?.default || ''
+    const rawVal = rawPosts[path]
+    const rawContent = typeof rawVal === 'string'
+      ? rawVal
+      : (rawVal && typeof rawVal === 'object' && 'default' in rawVal && typeof (rawVal as any).default === 'string')
+        ? (rawVal as any).default
+        : ''
     
     return {
       notFound: false,
