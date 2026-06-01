@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Link from "next/link";
+import Script from "next/script";
 import "highlight.js/styles/github-dark.css";
 import "./globals.css";
 
@@ -36,6 +37,20 @@ export default function RootLayout({
         <div className="flex-grow">
           {children}
         </div>
+
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-MM8QMY5JWN"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-MM8QMY5JWN');
+          `}
+        </Script>
       </body>
     </html>
   );
