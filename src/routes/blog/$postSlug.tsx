@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { lazy, Suspense, useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { InteractiveCounter, ColorPaletteVisualizer } from '../../components/mdx-components'
 import { MDXProvider } from '@mdx-js/react'
+import MdxContent from '../../content/blog/three-lessons-manus.mdx'
 
 // Define the custom components that will be made available inside all MDX files
 const mdxComponents = {
@@ -85,18 +86,6 @@ function PostReaderComponent() {
   const { postSlug } = Route.useParams()
   const { frontmatter, notFound, rawContent } = Route.useLoaderData()
   const [activeId, setActiveId] = useState('introduction')
-
-  // Dynamically resolve the MDX component based on the slug parameter
-  const MdxContent = lazy(() => {
-    if (notFound) {
-      return Promise.resolve({ default: () => null })
-    }
-    const loaderFn = postsGlob[`../../content/blog/${postSlug}.mdx`] as () => Promise<any>
-    if (!loaderFn) {
-      throw new Error(`Post not found: ${postSlug}`)
-    }
-    return loaderFn()
-  })
 
   // Parse H1 and H2 headings from raw MDX
   const headings = useMemo(() => {
@@ -229,14 +218,7 @@ function PostReaderComponent() {
 
         <article className="content">
           <MDXProvider components={mdxComponents}>
-            <Suspense fallback={
-              <div className="py-12 flex flex-col items-center justify-center gap-3">
-                <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-sm text-slate-500">Loading dynamic post...</span>
-              </div>
-            }>
-              <MdxContent />
-            </Suspense>
+            <MdxContent />
           </MDXProvider>
         </article>
       </div>
