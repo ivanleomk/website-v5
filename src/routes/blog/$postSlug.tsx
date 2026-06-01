@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState, useEffect, useMemo } from 'react'
 import { InteractiveCounter, ColorPaletteVisualizer } from '../../components/mdx-components'
 import { MDXProvider } from '@mdx-js/react'
 
@@ -11,6 +11,34 @@ const mdxComponents = {
 
 // A dictionary of all MDX files in content/blog
 const postsGlob = import.meta.glob('../../content/blog/*.mdx')
+// Eagerly import raw MDX strings to parse headings dynamically
+const rawPosts = import.meta.glob('../../content/blog/*.mdx', { query: '?raw', eager: true }) as Record<string, { default: string }>
+
+function parseHeadings(markdown: string) {
+  const lines = markdown.split('\n')
+  const headings: { text: string; id: string; level: number }[] = []
+  
+  for (const line of lines) {
+    const match = line.match(/^(#{1,2})\s+(.+)$/)
+    if (match) {
+      const level = match[1].length
+      const text = match[2].trim()
+      
+      // Convert heading text to standard URL slug id
+      const id = text
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+      
+      headings.push({
+        text: level === 1 ? 'Introduction' : text,
+        id: level === 1 ? 'introduction' : id,
+        level
+      })
+    }
+  }
+  return headings
+}
 
 export const Route = createFileRoute('/blog/$postSlug')({
   loader: async ({ params }) => {
@@ -20,6 +48,7 @@ export const Route = createFileRoute('/blog/$postSlug')({
     if (!(path in postsGlob)) {
       return {
         notFound: true,
+        rawContent: '',
         frontmatter: {
           title: 'Post Deleted',
           date: new Date().toISOString().split('T')[0],
@@ -28,10 +57,12 @@ export const Route = createFileRoute('/blog/$postSlug')({
       }
     }
     
-    // Import the MDX module to read its frontmatter at build time / load time
     const module = await postsGlob[path]() as any
+    const rawContent = rawPosts[path]?.default || ''
+    
     return {
       notFound: false,
+      rawContent,
       frontmatter: module.frontmatter || {
         title: slug,
         date: new Date().toISOString().split('T')[0],
@@ -44,7 +75,8 @@ export const Route = createFileRoute('/blog/$postSlug')({
 
 function PostReaderComponent() {
   const { postSlug } = Route.useParams()
-  const { frontmatter, notFound } = Route.useLoaderData()
+  const { frontmatter, notFound, rawContent } = Route.useLoaderData()
+  const [activeId, setActiveId] = useState('introduction')
 
   // Dynamically resolve the MDX component based on the slug parameter
   const MdxContent = lazy(() => {
@@ -57,6 +89,36 @@ function PostReaderComponent() {
     }
     return loaderFn()
   })
+
+  // Parse H1 and H2 headings from raw MDX
+  const headings = useMemo(() => {
+    if (!rawContent) return []
+    return parseHeadings(rawContent)
+  }, [rawContent])
+
+  // Track active heading on scroll
+  useEffect(() => {
+    if (notFound || headings.length === 0) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id)
+          }
+        }
+      },
+      { rootMargin: '-10% 0px -70% 0px' }
+    )
+
+    // Observe all parsed headings inside the article body
+    const headingElements = document.querySelectorAll(
+      'article.content h1, article.content h2'
+    )
+    headingElements.forEach((el) => observer.observe(el))
+
+    return () => observer.disconnect()
+  }, [notFound, headings])
 
   if (notFound) {
     return (
@@ -125,6 +187,38 @@ function PostReaderComponent() {
 
       {/* Premium Serif Article Body matching thinkingmachines.ai layout */}
       <div className="post-content-shell">
+        {/* Dynamic Table of Contents (Left TOC) */}
+        {headings.length > 0 && (
+          <nav className="left-toc" aria-label="Table of contents">
+            <ul className="toc-list">
+              {headings.map((h) => {
+                const isActive = activeId === h.id
+                return (
+                  <li key={h.id} className="toc-item flex items-baseline gap-2 py-0.5">
+                    {isActive ? (
+                      <span className="text-[12px] text-slate-800 dark:text-zinc-200 select-none">•</span>
+                    ) : (
+                      <span className="w-1.5 shrink-0"></span>
+                    )}
+                    <a 
+                      href={`#${h.id}`}
+                      className={`text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors font-medium ${isActive ? 'text-slate-900! dark:text-zinc-100! font-semibold' : ''}`}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        const targetId = h.id === 'introduction' ? 'main' : h.id
+                        document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' })
+                        setActiveId(h.id)
+                      }}
+                    >
+                      {h.text}
+                    </a>
+                  </li>
+                )
+              })}
+            </ul>
+          </nav>
+        )}
+
         <article className="content">
           <MDXProvider components={mdxComponents}>
             <Suspense fallback={
