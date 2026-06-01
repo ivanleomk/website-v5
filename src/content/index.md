@@ -1,0 +1,3 @@
+I currently work on Developer Experience at **Google DeepMind**, where I focus on making it easy to build on Gemini and spend a lot of time thinking about evaluating autonomous agents. Previously, I built general-purpose action engines for knowledge work at **Manus** (acquired by Meta) and worked on open-source libraries like [Instructor](https://github.com/jxnl/instructor) which made it easy to get reliable structured outputs for language models using Pydantic.
+
+I like large wide spaces and once spent a month traveling across Russia and Mongolia on the Trans Siberian Railway. I started working on Language Models after becoming fluent in French (B2) and decided I should do something more productive for my career. I like spicy food a lot - especially a good 干锅。

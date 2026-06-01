@@ -1,0 +1,486 @@
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+@import "tailwindcss";
+
+/* 1. Tailwind v4 custom theme mappings */
+@theme {
+  --font-serif: "Iowan Old Style BT", Georgia, "Times New Roman", serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --color-slate-450: #676767;
+}
+
+/* 2. Global variables matching live thinkingmachines.ai values */
+:root {
+  --bg: white;
+  --fg: #282828;
+  --fg1: #3c3836;
+  --fg2: #504945;
+  --fg3: #6b6866;
+  --fg4: #676767;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: "Iowan Old Style BT", Georgia, "Times New Roman", serif;
+}
+
+.dark {
+  --bg: #000000;
+  --fg: #ffffff;
+  --fg1: #f0f0f0;
+  --fg2: #e0e0e0;
+  --fg3: #d0d0d0;
+  --fg4: #c0c0c0;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-serif);
+}
+
+/* 3. Micro-Animations */
+@keyframes float {
+  0% { transform: translateY(5px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(5px); }
+}
+
+@keyframes gradRotate {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+/* 4. Logo Header Branding matching real site logo */
+.logo-container {
+  text-align: center;
+  padding-block: 1rem 1.35rem;
+}
+
+.logo {
+  position: relative;
+  overflow: hidden;
+  background: white;
+  color: black;
+  border: solid 1px white;
+  backface-visibility: hidden;
+  animation: float 7s ease-in-out infinite;
+  display: inline-block;
+  font-size: clamp(3em, 8vw, 3.4em);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.3;
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 500;
+  color: inherit !important;
+  text-decoration: none !important;
+  padding: 0.2rem 1rem;
+}
+
+.logo:AFTER {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  aspect-ratio: 1;
+  background: linear-gradient(90deg, #565151, #d2caca);
+  mix-blend-mode: screen;
+  animation: gradRotate 8s linear infinite;
+  pointer-events: none;
+  max-width: 100vw;
+  overflow: clip;
+  transform-origin: center;
+  transform: translate(-50%, -50%);
+}
+
+.dark .logo {
+  background: black;
+  color: white;
+  border-color: black;
+}
+
+.dark .logo:AFTER {
+  background: linear-gradient(90deg, #b5b9ff, #ffd6e0, #c1f7d3, #ffe5b4, #f7c8ff, #b5b9ff);
+  mix-blend-mode: multiply;
+}
+
+/* Homepage Announcement under the logo */
+.home-announcement {
+  margin-top: 1.6rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  max-width: 660px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.home-announcement .pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  height: 26px;
+  font-family: var(--font-sans);
+  font-weight: 450;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--fg1);
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 100px;
+  transition: background-color 0.2s ease;
+}
+
+.dark .home-announcement .pill {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--fg3);
+}
+
+.home-announcement .announcement-text {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  color: var(--fg);
+  text-wrap: balance;
+}
+
+.home-announcement:hover .announcement-text {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--fg) 20%, transparent);
+  text-underline-offset: 2px;
+}
+
+.home-announcement:hover .pill {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.dark .home-announcement:hover .pill {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* 5. Custom Dynamic Connectionism Article List Styling */
+.post-group ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.post-group ul li {
+  margin-bottom: 0;
+  position: relative;
+  padding-bottom: 0.4rem;
+}
+
+.post-group ul li + li {
+  padding-top: 0.4rem;
+}
+
+.post-group ul li + li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  border-top: 1px solid color-mix(in srgb, var(--fg4) 10%, transparent);
+  pointer-events: none;
+}
+
+.post-group .post-item-link {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 1.5rem;
+  align-items: baseline;
+  line-height: 1.4;
+  padding: 1.2rem 1.5rem;
+  margin: 0 -1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.post-group .post-item-link:hover {
+  background-color: rgba(128, 128, 128, 0.04);
+}
+
+.post-group .post-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.post-group .post-title {
+  color: var(--fg);
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.post-group .post-info .author {
+  display: block;
+  font-size: 15px;
+  color: var(--fg4);
+  font-family: var(--font-sans);
+  padding-top: 4px;
+}
+
+.post-group .post-item-link .desktop-time {
+  text-align: left;
+  font-size: 15px;
+  font-family: var(--font-sans);
+  color: var(--fg4);
+  white-space: nowrap;
+}
+
+.post-group .post-item-link .mobile-time {
+  display: none;
+}
+
+/* Hover effects for rows */
+.post-group .post-item-link:hover .post-info .post-title {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--fg) 20%, transparent);
+  text-underline-offset: 2px;
+}
+
+@media screen and (max-width: 767px) {
+  .post-group .post-item-link {
+    display: block;
+    padding: 1rem 1.6rem;
+    margin: 0 -1.6rem;
+  }
+  
+  .post-group .post-item-link .desktop-time {
+    display: none;
+  }
+
+  .post-group .post-item-link .mobile-time {
+    display: block;
+    font-size: 15px;
+    color: var(--fg4);
+    font-family: var(--font-sans);
+    margin-top: 4px;
+  }
+}
+
+/* 6. Typography matching Iowan serif exactly */
+article.content p {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--fg);
+  margin-top: 1.5rem;
+  margin-bottom: 1.8rem;
+}
+
+article.content strong {
+  font-weight: 550;
+  color: var(--fg);
+}
+
+article.content em {
+  font-style: italic;
+}
+
+article.content a {
+  color: var(--fg4);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 0.5px;
+}
+
+article.content a:hover {
+  opacity: 0.8;
+}
+
+article.content h1 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 1.4;
+  text-align: left;
+  margin-top: 2.8rem;
+  margin-bottom: 1rem;
+}
+
+article.content h2 {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  margin: 1.6em 0 0.6em;
+  margin-top: 1.25em;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.015em;
+}
+
+article.content h3 {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  margin: 1.4em 0 0.5em 0;
+  font-weight: normal;
+  font-style: italic;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+article.content ul {
+  list-style-type: square;
+  margin-left: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+article.content ul > li {
+  margin-bottom: 0.2rem;
+  line-height: 1.65;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  color: var(--fg);
+}
+
+article.content ol {
+  list-style-type: decimal;
+  margin-left: 2rem;
+  margin-top: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+article.content ol > li {
+  margin-bottom: 0.2rem;
+  line-height: 1.65;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  color: var(--fg);
+}
+
+article.content img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 100%;
+  border-radius: 12px;
+  height: auto;
+}
+
+
+
+.blog-page-title {
+  font-family: var(--font-sans);
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  text-align: left;
+  margin: 0;
+  line-height: 1.1;
+  color: var(--fg);
+}
+
+/* 7. Extracted thinkingmachines.ai CSS for pixel-perfect blog posts */
+#main.post {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 950px;
+  position: relative;
+  --post-caption-font-size: 13px;
+  --post-caption-gap: 13px;
+  --post-block-padding-y: 0.75rem;
+  --post-code-block-padding-y: 0.2rem;
+  --post-formula-padding-y: 0.45rem;
+}
+
+#main.post .post-heading {
+  text-align: center;
+  margin-top: 4rem;
+  margin-bottom: 2rem;
+}
+
+#main.post .post-title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 30px;
+  max-width: 570px;
+  margin: 1.5rem auto 0;
+  line-height: 1.4;
+  color: var(--fg);
+  text-wrap: balance;
+}
+
+#main.post .post-heading .publish-metadata {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--fg3);
+  font-size: 15px;
+  line-height: 17px;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  font-family: var(--font-sans);
+}
+
+#main.post .post-heading .publish-metadata .author {
+  font-size: 15px;
+  line-height: 21px;
+  letter-spacing: 0.24px;
+  color: var(--fg);
+  font-family: var(--font-sans);
+  text-transform: none;
+  display: block;
+}
+
+#main.post .post-heading .publish-metadata > span {
+  display: inline-block;
+  padding-top: 0.6em;
+  font-family: var(--font-sans);
+}
+
+#main.post article.content {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 660px;
+  position: relative;
+  overflow: visible;
+}
+
+
+#main.post .post-cover {
+  text-align: center;
+  margin: 2.5rem 0;
+  max-width: 660px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#main.post .post-cover.compact {
+  max-width: 380px;
+}
+
+#main.post .post-cover.compact .cover-image {
+  max-height: 420px;
+  object-fit: cover;
+}
+
+#main.post .post-cover .cover-image {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Back navigation styling */
+#main.post .back-nav {
+  margin-bottom: 2rem;
+}
