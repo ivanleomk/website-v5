@@ -2,7 +2,6 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState, useEffect, useMemo } from 'react'
 import { InteractiveCounter, ColorPaletteVisualizer } from '../../components/mdx-components'
 import { MDXProvider } from '@mdx-js/react'
-import MdxContent from '../../content/blog/three-lessons-manus.mdx'
 
 // Define the custom components that will be made available inside all MDX files
 const mdxComponents = {
@@ -10,8 +9,8 @@ const mdxComponents = {
   ColorPaletteVisualizer,
 }
 
-// A dictionary of all MDX files in content/blog
-const postsGlob = import.meta.glob('../../content/blog/*.mdx')
+// A dictionary of all MDX files in content/blog eagerly imported at build time
+const postsGlob = import.meta.glob('../../content/blog/*.mdx', { eager: true }) as Record<string, any>
 // Eagerly import raw MDX strings to parse headings dynamically
 const rawPosts = import.meta.glob('../../content/blog/*.mdx', { query: '?raw', eager: true }) as Record<string, any>
 
@@ -61,7 +60,7 @@ export const Route = createFileRoute('/blog/$postSlug')({
       }
     }
     
-    const module = await postsGlob[path]() as any
+    const module = postsGlob[path]
     const rawVal = rawPosts[path]
     const rawContent = typeof rawVal === 'string'
       ? rawVal
@@ -145,6 +144,10 @@ function PostReaderComponent() {
     )
   }
 
+  // Resolve the statically pre-bundled MDX component synchronously
+  const path = `../../content/blog/${postSlug}.mdx`
+  const MdxContent = postsGlob[path]?.default
+
   // Determine the cover image for the post if available
   const hasCover = postSlug === 'three-lessons-manus'
   const coverSrc = hasCover ? '/images/three-lessons-manus/manus-desk.jpg' : null
@@ -218,7 +221,7 @@ function PostReaderComponent() {
 
         <article className="content">
           <MDXProvider components={mdxComponents}>
-            <MdxContent />
+            {MdxContent && <MdxContent />}
           </MDXProvider>
         </article>
       </div>
