@@ -3,6 +3,12 @@ import Link from "next/link";
 export default function Home() {
   const selectedEssays = [
     {
+      slug: "grep-beats-sqlite-fts",
+      title: "How Simple Grep Beats Naive SQL",
+      date: "Jun 2026",
+      description: "We benchmarked grep vs SQLite FTS across 300k tokens. grep won: 29.6% cheaper, better accuracy. Here's why + the dataset.",
+    },
+    {
       slug: "three-lessons-manus",
       title: "Three Lessons I've Learned at Manus",
       date: "Dec 2025",
