@@ -1,39 +1,16 @@
-import fs from "fs";
-import path from "path";
 import { notFound } from "next/navigation";
+import { blogPosts, getBlogPost } from "@/content/blog/registry";
 import TableOfContents from "./toc";
 
-// Read all MDX files at build time to generate static paths
 export function generateStaticParams() {
-  const contentDir = path.join(process.cwd(), "src/content/blog");
-  if (!fs.existsSync(contentDir)) {
-    return [];
-  }
-  const files = fs.readdirSync(contentDir).filter((f) => f.endsWith(".mdx"));
-  return files.map((f) => ({ slug: f.replace(/\.mdx$/, "") }));
+  return blogPosts.map((post) => ({ slug: post.slug }));
 }
-
-export const dynamicParams = false;
 
 function slugify(text: string) {
   return text
     .toLowerCase()
     .replace(/[^\w\s-]/g, "")
     .replace(/\s+/g, "-");
-}
-
-// Parse h2 and h3 headings from raw MDX text
-function parseHeadings(raw: string) {
-  const headings: { text: string; id: string; level: number }[] = [];
-  for (const line of raw.split("\n")) {
-    const match = line.match(/^(#{2,3})\s+(.+)$/);
-    if (match) {
-      const level = match[1].length;
-      const text = match[2].trim();
-      headings.push({ text, id: slugify(text), level });
-    }
-  }
-  return headings;
 }
 
 // Custom heading components that add id attributes for TOC linking
@@ -61,19 +38,14 @@ export default async function Page({
 }) {
   const { slug } = await params;
 
-  const filePath = path.join(process.cwd(), "src/content/blog", `${slug}.mdx`);
-  if (!fs.existsSync(filePath)) {
+  const post = getBlogPost(slug);
+  if (!post) {
     notFound();
   }
 
-  const raw = fs.readFileSync(filePath, "utf-8");
-  const headings = parseHeadings(raw);
+  const { Content: MdxContent, frontmatter, headings } = post;
 
-  const { default: MdxContent, frontmatter } = await import(
-    `@/content/blog/${slug}.mdx`
-  );
-
-  const formattedDate = new Date(frontmatter.date).toLocaleDateString("en-US", {
+  const formattedDate = new Date(frontmatter.date ?? "").toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",

@@ -1,6 +1,5 @@
 import Link from "next/link";
-import fs from "fs";
-import path from "path";
+import { blogPosts } from "@/content/blog/registry";
 
 type PostMeta = {
   slug: string;
@@ -10,31 +9,23 @@ type PostMeta = {
   author: string;
 };
 
-async function getPosts(): Promise<PostMeta[]> {
-  const dir = path.join(process.cwd(), "src/content/blog");
-  const files = fs.readdirSync(dir).filter((f) => f.endsWith(".mdx"));
-
-  const posts: PostMeta[] = [];
-  for (const file of files) {
-    const slug = file.replace(/\.mdx$/, "");
-    const mod = await import(`@/content/blog/${slug}.mdx`);
-    const fm = mod.frontmatter ?? {};
-    posts.push({
-      slug,
-      title: fm.title ?? slug,
+function getPosts(): PostMeta[] {
+  return blogPosts.map((post) => {
+    const fm = post.frontmatter;
+    return {
+      slug: post.slug,
+      title: fm.title ?? post.slug,
       date: fm.date ?? "",
       description: fm.description ?? "",
       author: fm.author ?? "Ivan Leo",
-    });
-  }
-
-  return posts.sort(
+    };
+  }).sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 }
 
-export default async function BlogIndex() {
-  const posts = await getPosts();
+export default function BlogIndex() {
+  const posts = getPosts();
 
   return (
     <main className="max-w-[660px] mx-auto px-6 py-12 md:py-16">
