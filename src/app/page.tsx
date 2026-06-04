@@ -6,7 +6,7 @@ export default function Home() {
       slug: "grep-beats-sqlite-fts",
       title: "How Simple Grep Beats Naive SQL",
       date: "Jun 2026",
-      description: "We benchmarked grep vs SQLite FTS across 300k tokens. grep won: 29.6% cheaper, better accuracy. Here's why + the dataset.",
+      description: "I benchmarked grep vs SQLite FTS across 300k tokens. grep won: 29.6% cheaper, better accuracy",
     },
     {
       slug: "three-lessons-manus",

@@ -101,13 +101,13 @@ export const blogPosts: BlogPost[] = [
     Content: grepBeatsSqliteFtsContent,
     headings: [
         {
-            "text": "Generating our Corpus",
-            "id": "generating-our-corpus",
+            "text": "Generating the Corpus",
+            "id": "generating-the-corpus",
             "level": 2
         },
         {
-            "text": "Creating our Environment",
-            "id": "creating-our-environment",
+            "text": "Creating the Environment",
+            "id": "creating-the-environment",
             "level": 2
         },
         {
