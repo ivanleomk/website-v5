@@ -3,18 +3,18 @@ export const frontmatter = {
   date: "2026-06-03",
   author: "Ivan Leo",
   description:
-    "We benchmarked bash vs SQLite FTS across 300k tokens. grep won: 29.6% cheaper ($2.45 vs $3.48), better accuracy. Here's why + the dataset.",
+    "I benchmarked bash vs SQLite FTS across 300k tokens. grep won: 29.6% cheaper ($2.45 vs $3.48), better accuracy. Here's why + the dataset.",
 };
 
 Inspired by teams like [Mintlify building virtual filesystems for their assistants](https://www.mintlify.com/blog/how-we-built-a-virtual-filesystem-for-our-assistant), I benchmarked a naive SQLite Full-Text Search (FTS) setup against a raw terminal (grep, view_file) over the entire Google API Documents ( ~300k tokens and 94 files ).
 
-Suprisingly, working with our multi-hop retrieval tasks completely flipped my assumption that FTS would beat crude bash commands - **bash was 29.6% cheaper and required 33.8% fewer conversation steps than FTS**.
+Suprisingly, working with my multi-hop retrieval tasks completely flipped my assumption that FTS would beat crude bash commands - **bash was 29.6% cheaper and required 33.8% fewer conversation steps than FTS**.
 
 All of the code and setup files for this benchmark are available in the [ivanleomk/agent-search](https://github.com/ivanleomk/agent-search) GitHub repository. You can also view the complete evaluation traces and dataset directly on the Harbor Hub via the [ivanleo/agent-search/latest](https://hub.harborframework.com/datasets/ivanleo/agent-search/latest) dataset.
 
-## Generating our Corpus
+## Generating the Corpus
 
-For this exercise, we used the Google Generative AI Documentation which ended up being a total of 300k+ tokens of raw text over 94 different documents that our model had to parse through to answer each question.
+For this exercise, I used the Google Generative AI Documentation which ended up being a total of 300k+ tokens of raw text over 94 different documents that my model had to parse through to answer each question.
 
 The nice thing about the [Gemini API Docs Site](https://ai.google.dev/gemini-api/docs) is that if you add a `.md.txt` suffix to the end of the url, you can get the raw markdown source without any fancy selenium for any pager as seen below.
 
@@ -36,7 +36,7 @@ import urllib.request
     print(content[:500])  # View first 500 characters of Markdown
 ```
 
-Because Gemini has a huge 1M context window, we can stuff everything into its entire context and ask it to generate 10 natural, conversational and multi-hop evaluation questions.
+Because Gemini has a huge 1M context window, I can stuff everything into its entire context and ask it to generate 10 natural, conversational and multi-hop evaluation questions.
 
 ```python
 from google import genai
@@ -66,11 +66,11 @@ This ended up being pretty surprisingly good out of the box.
 
 Here is a sample question and explanation about Managed Agents:
 
-**Question:** _Hey, I'm building a custom coding agent that needs to clone a private GitHub repository, install some dependencies, and run tests inside a secure sandbox. How can I safely pass my GitHub Personal Access Token to the agent without exposing it in the sandbox files or environment variables? Also, how can I make sure the agent only has outbound access to GitHub and PyPI, and what happens to the files we create after the session goes idle?_
+**Question:** _Hey, I'm building a custom coding agent that needs to clone a private GitHub repository, install some dependencies, and run tests inside a secure sandbox. How can I safely pass my GitHub Personal Access Token to the agent without exposing it in the sandbox files or environment variables? Also, how can I make sure the agent only has outbound access to GitHub and PyPI, and what happens to the files I create after the session goes idle?_
 
 **Explanation:** Base64-encode your token in the format `'x-oauth-basic:YOUR_PAT'` and define a network rule for `'github.com'` (or `'api.github.com'`) with a `'transform'` block containing `'Authorization': 'Basic <YOUR_BASE64_TOKEN>'`. The egress proxy automatically injects this header. Restrict egress by setting `'network.allowlist'` to only contain `'github.com'` and `'pypi.org'`. The sandbox snapshots and stops after 15 minutes of inactivity (Idle state) and is deleted after 7 days in the Offline state.
 
-This requires the agent to narrow down the scope to our new Managed Agents offering in `custom-agents`, read the portion about the Agent Environment and understand how the Life Cycle works in the `agent-environment` page. Lastly it needs to narrow down the scope to identify our allow-list syntax and realise that it allows for dynamic injection of secrets using a MITM proxy.
+This requires the agent to narrow down the scope to the new Managed Agents offering in `custom-agents`, read the portion about the Agent Environment and understand how the Life Cycle works in the `agent-environment` page. Lastly it needs to narrow down the scope to identify the allow-list syntax and realise that it allows for dynamic injection of secrets using a MITM proxy.
 
 Here is another example of a generated task involving Google Search and Image Generation Grounding
 
@@ -82,13 +82,13 @@ This requires traversing the `image-generation.md` page to confirm model capabil
 
 The most challenging aspect is the strict legal styling and compliance rules (like the exact Roboto font, minimum `12sp` size, and the `translate="no"` attribute) which are going to be easily missed by models not performing careful multi-hop scanning.
 
-## Creating our Environment
+## Creating the Environment
 
-To make it easy for others to use and test the same setups, we configured the evaluation environment using Harbor.
+To make it easy for others to use and test the same setups, I configured the evaluation environment using Harbor.
 
 If you're not familiar with Harbor, it's an open specification and runner for agent evaluations. Think of it as a standardized format to package up tasks, sandboxes, and verifiers so they run exactly the same way on any machine.
 
-Because Harbor defines environments as a spec, it gives us a really clean way to declare tasks and swap dependencies under the hood without changing the evaluation harness itself. Every task starts with a simple config:
+Because Harbor defines environments as a spec, it gives me a really clean way to declare tasks and swap dependencies under the hood without changing the evaluation harness itself. Every task starts with a simple config:
 
 ```toml
 schema_version = "1.3"
@@ -106,12 +106,12 @@ COPY docs/ /docs/
 WORKDIR /app
 ```
 
-We configure our two setups simply by changing what we copy into that /docs/ folder:
+I configure my two setups simply by changing what I copy into that /docs/ folder:
 
-- Grep Baseline: We keep the 94 raw Markdown files in /docs/ .
+- Grep Baseline: I keep the 94 raw Markdown files in /docs/ .
 - SQLite FTS: A virtual FTS5 table containing chunked headings and content snippets. The agent must query the SQLite database by running Python script commands via the antigravity tool `run_command`.
 
-To index these markdown files into SQLite, we used a Python script to chunk the files and then load them into a FTS5 virtual table.
+To index these markdown files into SQLite, I used a Python script to chunk the files and then load them into a FTS5 virtual table.
 
 ```python
 import sqlite3
@@ -156,7 +156,7 @@ for filename in os.listdir("gemini_docs"):
 conn.commit()
 ```
 
-This decoupled design makes running evaluations extremely simple. We just hit the CLI:
+This decoupled design makes running evaluations extremely simple. I just hit the CLI:
 
 ```bash
 harbor run --env docker -n 3 -p tasks/fts -a antigravity-sdk -m gemini-3.5-flash
@@ -177,7 +177,7 @@ uv add git+https://github.com/ivanleomk/harbor.git --branch feat/add-antigravity
 
 ## Why did FTS lose?
 
-To understand why FTS lost to a crude baseline, we pulled the execution traces for q-10 —a complex question about video context caching, tokenization limits, and storage pricing.
+To understand why FTS lost to a crude baseline, I pulled the execution traces for q-10 —a complex question about video context caching, tokenization limits, and storage pricing.
 
 The Grep agent scored a perfect 1.0 while The SQLite FTS agent scored a 0.0. The answer's pretty obvious once you start looking at the traces.
 
@@ -225,7 +225,7 @@ It is easy to assume that a database with structured full-text search will autom
 
 Without testing, you might deploy a naive database setup, watch it burn $3.50 a run on multi-hop loops, and conclude that "SQLite FTS just sucks for agents."
 
-In reality, the tool design was the bottleneck, not the database. If you want a FTS index to work better, give a model a dedicated query tool that returns slices of data or default to returning the full page by default if we have a match.
+In reality, the tool design was the bottleneck, not the database. If you want a FTS index to work better, give a model a dedicated query tool that returns slices of data or default to returning the full page by default if there is a match.
 
 Or better yet, ask the model what it needs and then let the evaluations speak for themselves.
 
