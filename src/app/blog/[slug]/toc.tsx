@@ -29,7 +29,7 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
 
   return (
     <nav
-      className="hidden xl:block absolute right-[calc(100%+2.5rem)] top-0 w-[180px]"
+      className="hidden xl:block absolute right-[calc(100%+2.5rem)] top-0 h-full w-[180px]"
       aria-label="Table of contents"
     >
       <ul className="sticky top-24 space-y-0.5 list-none p-0 m-0">

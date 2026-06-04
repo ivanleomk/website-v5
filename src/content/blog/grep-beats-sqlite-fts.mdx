@@ -1,0 +1,232 @@
+export const frontmatter = {
+  title: "How Simple Grep Beats Naive SQL",
+  date: "2026-06-03",
+  author: "Ivan Leo",
+  description:
+    "We benchmarked bash vs SQLite FTS across 300k tokens. grep won: 29.6% cheaper ($2.45 vs $3.48), better accuracy. Here's why + the dataset.",
+};
+
+Inspired by teams like [Mintlify building virtual filesystems for their assistants](https://www.mintlify.com/blog/how-we-built-a-virtual-filesystem-for-our-assistant), I benchmarked a naive SQLite Full-Text Search (FTS) setup against a raw terminal (grep, view_file) over the entire Google API Documents ( ~300k tokens and 94 files ).
+
+Suprisingly, working with our multi-hop retrieval tasks completely flipped my assumption that FTS would beat crude bash commands - **bash was 29.6% cheaper and required 33.8% fewer conversation steps than FTS**.
+
+All of the code and setup files for this benchmark are available in the [ivanleomk/agent-search](https://github.com/ivanleomk/agent-search) GitHub repository. You can also view the complete evaluation traces and dataset directly on the Harbor Hub via the [ivanleo/agent-search/latest](https://hub.harborframework.com/datasets/ivanleo/agent-search/latest) dataset.
+
+## Generating our Corpus
+
+For this exercise, we used the Google Generative AI Documentation which ended up being a total of 300k+ tokens of raw text over 94 different documents that our model had to parse through to answer each question.
+
+The nice thing about the [Gemini API Docs Site](https://ai.google.dev/gemini-api/docs) is that if you add a `.md.txt` suffix to the end of the url, you can get the raw markdown source without any fancy selenium for any pager as seen below.
+
+```python
+import urllib.request
+
+    def fetch_doc_markdown(doc_url: str) -> str:
+        # Append the .md.txt suffix to access raw Markdown source directly
+        raw_url = f"{doc_url.rstrip('/')}.md.txt"
+        try:
+            with urllib.request.urlopen(raw_url) as response:
+                return response.read().decode('utf-8')
+        except Exception as e:
+            print(f"Failed to fetch {raw_url}: {e}")
+            return ""
+
+    # Fetching the document cache guidelines
+    content = fetch_doc_markdown("https://ai.google.dev/gemini-api/docs/caching")
+    print(content[:500])  # View first 500 characters of Markdown
+```
+
+Because Gemini has a huge 1M context window, we can stuff everything into its entire context and ask it to generate 10 natural, conversational and multi-hop evaluation questions.
+
+```python
+from google import genai
+import glob
+
+# Load all 94 scraped markdown files into a single context string
+def load_docs_context() -> str:
+    docs = []
+    for path in glob.glob("gemini_docs/*.md"):
+        with open(path, "r") as f:
+            docs.append(f"--- FILE: {path} ---\n{f.read()}")
+    return "\n".join(docs)
+
+# Use Gemini 3.5 Flash to generate complex multi-hop questions directly
+client = genai.Client()
+response = client.models.generate_content(
+    model="gemini-3.5-flash",
+    contents=[
+        load_docs_context(),
+        "Generate 10 natural, multi-hop evaluation questions spanning 3-4 distinct docs with ground truths."
+    ],
+    config={"response_mime_type": "application/json"}
+)
+```
+
+This ended up being pretty surprisingly good out of the box.
+
+Here is a sample question and explanation about Managed Agents:
+
+**Question:** _Hey, I'm building a custom coding agent that needs to clone a private GitHub repository, install some dependencies, and run tests inside a secure sandbox. How can I safely pass my GitHub Personal Access Token to the agent without exposing it in the sandbox files or environment variables? Also, how can I make sure the agent only has outbound access to GitHub and PyPI, and what happens to the files we create after the session goes idle?_
+
+**Explanation:** Base64-encode your token in the format `'x-oauth-basic:YOUR_PAT'` and define a network rule for `'github.com'` (or `'api.github.com'`) with a `'transform'` block containing `'Authorization': 'Basic <YOUR_BASE64_TOKEN>'`. The egress proxy automatically injects this header. Restrict egress by setting `'network.allowlist'` to only contain `'github.com'` and `'pypi.org'`. The sandbox snapshots and stops after 15 minutes of inactivity (Idle state) and is deleted after 7 days in the Offline state.
+
+This requires the agent to narrow down the scope to our new Managed Agents offering in `custom-agents`, read the portion about the Agent Environment and understand how the Life Cycle works in the `agent-environment` page. Lastly it needs to narrow down the scope to identify our allow-list syntax and realise that it allows for dynamic injection of secrets using a MITM proxy.
+
+Here is another example of a generated task involving Google Search and Image Generation Grounding
+
+**Question:** _I'm looking to use Gemini 3 Pro Image to generate high-resolution visual assets. Can I use Google Search grounding with this model to fetch real-time weather information and reflect it in the graphic? If so, what metadata is returned in the API response, and what are the specific legal and UI requirements I must follow when displaying the grounded image to end-users?_
+
+**Explanation:** Yes, `gemini-3-pro-image` is a reasoning model that can use Google Search grounding to fetch real-time info and generate high-resolution images. The response returns a `groundingMetadata` block containing `webSearchQueries`, `searchEntryPoint` (HTML/CSS search suggestions), `groundingChunks` (URIs/titles), and `groundingSupports` (segments-to-chunks mapping). For rendering, you must: (1) show attributions immediately following the grounded image (one user interaction away), (2) attribute to Google Maps or Google Search exactly (Roboto font, 12sp minimum size, and `translate="no"` HTML attribute), and (3) provide a single-click direct link to the web page.
+
+This requires traversing the `image-generation.md` page to confirm model capabilities and search grounding support, then jumping to `google-search.md` to verify the returned metadata format.
+
+The most challenging aspect is the strict legal styling and compliance rules (like the exact Roboto font, minimum `12sp` size, and the `translate="no"` attribute) which are going to be easily missed by models not performing careful multi-hop scanning.
+
+## Creating our Environment
+
+To make it easy for others to use and test the same setups, we configured the evaluation environment using Harbor.
+
+If you're not familiar with Harbor, it's an open specification and runner for agent evaluations. Think of it as a standardized format to package up tasks, sandboxes, and verifiers so they run exactly the same way on any machine.
+
+Because Harbor defines environments as a spec, it gives us a really clean way to declare tasks and swap dependencies under the hood without changing the evaluation harness itself. Every task starts with a simple config:
+
+```toml
+schema_version = "1.3"
+artifacts = [{ source = "/app/output.txt", destination = "output.txt" }]
+
+[task]
+name = "ivanleo/q-1-managed-agents-security"
+```
+
+The underlying sandbox is described by a standard Dockerfile:
+
+```dockerfile
+FROM ubuntu:24.04
+COPY docs/ /docs/
+WORKDIR /app
+```
+
+We configure our two setups simply by changing what we copy into that /docs/ folder:
+
+- Grep Baseline: We keep the 94 raw Markdown files in /docs/ .
+- SQLite FTS: A virtual FTS5 table containing chunked headings and content snippets. The agent must query the SQLite database by running Python script commands via the antigravity tool `run_command`.
+
+To index these markdown files into SQLite, we used a Python script to chunk the files and then load them into a FTS5 virtual table.
+
+```python
+import sqlite3
+import re
+
+# 1. Create a SQLite FTS5 table with Porter stemming
+conn = sqlite3.connect("docs.db")
+cursor = conn.cursor()
+cursor.execute("""
+    CREATE VIRTUAL TABLE doc_search USING fts5(
+        filename, title, heading, content, tokenize="porter unicode61"
+    );
+""")
+
+# 2. Chunk markdown files based on headers
+def chunk_markdown(content):
+    sections, current_lines = [], []
+    current_heading = "Overview"
+    for line in content.split("\n"):
+        match = re.match(r"^(#+)\s+(.+)$", line)
+        if match:
+            if current_lines:
+                sections.append((current_heading, "\n".join(current_lines).strip()))
+                current_lines = []
+            current_heading = match.group(2).strip()
+        else:
+            current_lines.append(line)
+    if current_lines:
+        sections.append((current_heading, "\n".join(current_lines).strip()))
+    return sections
+
+# 3. Read markdown files and insert into the database
+for filename in os.listdir("gemini_docs"):
+    if filename.endswith(".md"):
+        with open(f"gemini_docs/{filename}", "r") as f:
+            content = f.read()
+            for heading, section_content in chunk_markdown(content):
+                cursor.execute(
+                    "INSERT INTO doc_search VALUES (?, ?, ?, ?)",
+                    (filename, filename[:-3], heading, section_content)
+                )
+conn.commit()
+```
+
+This decoupled design makes running evaluations extremely simple. We just hit the CLI:
+
+```bash
+harbor run --env docker -n 3 -p tasks/fts -a antigravity-sdk -m gemini-3.5-flash
+```
+
+**Note:** The `antigravity-sdk` agent runner is currently part of an open PR in Harbor ([PR #1796](https://github.com/harbor-framework/harbor/pull/1796/changes)). If you want to run these benchmarks yourself, you can install this version of Harbor with:
+
+```bash
+uv add git+https://github.com/ivanleomk/harbor.git --branch feat/add-antigravity-sdk
+```
+
+| Metric                  | Grep Baseline Run                                                                                | SQLite FTS Run (Resumed)                                                                        |
+| :---------------------- | :----------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------- |
+| **Mean Reward**         | **0.800** (8/10 passed)                                                                          | **0.700** (7/10 passed)                                                                         |
+| **Total Input Tokens**  | **3.67M**                                                                                        | **5.86M**                                                                                       |
+| **Total Cost (USD)**    | **$2.45**                                                                                        | **$3.48**                                                                                       |
+| **Harbor Hub Job Link** | [Job 18c065f1 (Grep)](https://hub.harborframework.com/jobs/18c065f1-d900-4d55-a201-69db4efbaebd) | [Job bc96451b (FTS)](https://hub.harborframework.com/jobs/bc96451b-ef7d-4e03-9c63-e669fe2aaa00) |
+
+## Why did FTS lose?
+
+To understand why FTS lost to a crude baseline, we pulled the execution traces for q-10 —a complex question about video context caching, tokenization limits, and storage pricing.
+
+The Grep agent scored a perfect 1.0 while The SQLite FTS agent scored a 0.0. The answer's pretty obvious once you start looking at the traces.
+
+The Grep agent needed information scattered across caching.md , pricing.md , billing.md , video-understanding.md , and media-resolution.md .
+
+Because it had direct filesystem access, reading was a simple one-turn operation:
+
+```
+{
+      "function_name": "view_file",
+      "arguments": {
+        "file_path": "/docs/caching.md",
+        "start_line": 1,
+        "end_line": 626
+      }
+    }
+```
+
+In just 6 clean turns, it had read all 5 files, synthesized the default 1-hour TTL, extracted the exact tokenization formulas for audio/video frames, and noted the 90% discount on cache reads.
+
+However, because the raw markdown files were deleted in the FTS environment, the FTS agent had no files to read. To look at anything, it had to write and execute a Python script to query the database:
+
+```
+{
+  "function_name": "run_command",
+  "arguments": {
+    "command_line": "python3 -c \"\nimport sqlite3\nconn = sqlite3.connect('/docs/docs.db')\ncursor = conn.cursor()\ncursor.execute('SELECT content FROM docs WHERE filename = \\\"caching.md\\\"')\nprint(cursor.fetchone()[0])\""
+  }
+}
+```
+
+Every single read took double the turns: one turn to write the code, and another turn to get the stdout. The agent spent more context window and cognitive load debugging Python strings than actually analyzing documentation.
+
+More importantly, it broke discovery. When the FTS agent queried MATCH 'video AND tokens' , SQLite returned snippets from embeddings.md and file-search.md but missed the critical table in media-resolution.md .
+
+In a filesystem setup, the agent would just grep or list the directory. But because querying the database was so high-overhead, the agent was discouraged from doing exploratory searches. It took shortcuts, hallucinated the token calculations for low-resolution video, and completely missed the 90% cache read discount.
+
+How did that impact the final answer? Because the FTS agent took shortcuts to avoid writing more SQL wrappers, it got lazy and hallucinated its numbers. It relied on a single match in video-understanding.md and assumed low-resolution frames cost 66 tokens across the board, failing to realize Gemini 3 uses 70 tokens/frame (and Gemini 2.5 uses 64).
+
+It forgot to add the 32 tokens/second audio rate to its final size calculation, got the Gemini 2.5 storage rate for caching wrong, and missed the 90% cache read discount entirely. Meanwhile, the Grep agent easily traversed the raw markdown files to pull the exact, model-specific token counts and pricing details, hitting every single criteria in the ground truth.
+
+## Conclusion
+
+It is easy to assume that a database with structured full-text search will automatically beat raw text files and grep. But unless you actually build simple evaluations and run the benchmarks, you will never see where your agent harnesses actually break.
+
+Without testing, you might deploy a naive database setup, watch it burn $3.50 a run on multi-hop loops, and conclude that "SQLite FTS just sucks for agents."
+
+In reality, the tool design was the bottleneck, not the database. If you want a FTS index to work better, give a model a dedicated query tool that returns slices of data or default to returning the full page by default if we have a match.
+
+Or better yet, ask the model what it needs and then let the evaluations speak for themselves.
+
+The traces will tell you exactly what to build.
