@@ -10,24 +10,6 @@ type PostMeta = {
   author: string;
 };
 
-function parseFrontmatter(content: string): Record<string, string> {
-  const match = content.match(/export\s+const\s+frontmatter\s*=\s*\{([\s\S]*?)\}/);
-  if (!match) {
-    return {};
-  }
-  
-  const fmText = match[1];
-  const fm: Record<string, string> = {};
-  
-  const matches = fmText.matchAll(/(\w+)\s*:\s*(?:"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)')/g);
-  for (const m of matches) {
-    const key = m[1];
-    const val = m[2] !== undefined ? m[2] : m[3];
-    fm[key] = val.replace(/\\"/g, '"').replace(/\\'/g, "'");
-  }
-  return fm;
-}
-
 async function getPosts(): Promise<PostMeta[]> {
   const dir = path.join(process.cwd(), "src/content/blog");
   const files = fs.readdirSync(dir).filter((f) => f.endsWith(".mdx"));
@@ -35,9 +17,8 @@ async function getPosts(): Promise<PostMeta[]> {
   const posts: PostMeta[] = [];
   for (const file of files) {
     const slug = file.replace(/\.mdx$/, "");
-    const filePath = path.join(dir, file);
-    const content = fs.readFileSync(filePath, "utf-8");
-    const fm = parseFrontmatter(content);
+    const mod = await import(`@/content/blog/${slug}.mdx`);
+    const fm = mod.frontmatter ?? {};
     posts.push({
       slug,
       title: fm.title ?? slug,
