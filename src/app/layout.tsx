@@ -24,7 +24,7 @@ export default function RootLayout({
     <html lang="en" className={`${newsreader.variable} antialiased`}>
       <body className="min-h-screen bg-white text-[#282828] flex flex-col">
         {/* Global Minimal Navigation */}
-        <header className="max-w-[680px] w-full mx-auto px-6 pt-10 pb-4 flex justify-between items-baseline">
+        <header className="max-w-[800px] w-full mx-auto px-6 pt-10 pb-4 flex justify-between items-baseline">
           <Link href="/" className="text-[14px] font-medium text-[#282828] no-underline hover:text-[#676767] transition-colors">
             Ivan Leo
           </Link>

@@ -52,7 +52,7 @@ export default async function Page({
   });
 
   return (
-    <main className="px-6 py-20 md:py-32 max-w-[680px] mx-auto">
+    <main className="px-6 py-20 md:py-32 max-w-[800px] mx-auto">
       {/* Header */}
       <header className="mb-16">
         <h1 className="font-semibold text-[30px] leading-[1.4] mb-3">
