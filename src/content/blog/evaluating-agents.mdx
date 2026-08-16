@@ -5,9 +5,9 @@ export const frontmatter = {
   description: "The loop stayed the same — input, output, compare — but the ball changed from quizzes to trajectories.",
 }
 
-I gave a talk at [Digital Jungle](https://artificialanalysis.ai/events/digital-jungle-2025) back in early 2025. Not to pitch something new, just to map the last few years of evals. I'd spent 2024 building [Manus](https://manus.im), an agent that ran multiple turns and edited real code. Before that, I wrote about [building reliable LLM applications](/blog/building-reliable-llm-applications) — RAG pipelines, structured outputs, single-turn stuff. That post still holds. This is the 2026 update.
+I gave a talk at [Digital Jungle](http://luma.com/qdl9mr2e?tk=P3UvLA) earlier this year. Not to pitch something new, just to map the last few years of evals. I'd spent 2024 building [Manus](https://manus.im), an agent that ran multiple turns and edited real code. Before that, I wrote about [building reliable LLM applications](/blog/building-reliable-llm-applications): RAG pipelines, structured outputs, single-turn stuff. That post still holds. This is the 2026 update.
 
-The thesis is simple: the loop never changed. You give something input, it gives you output, you compare. What changed is the ball we're passing through that loop. Evaluating a model (question in, letter out) is not evaluating an agent (trajectory, tools, environment state). We're at halftime. Scale crushed most old benchmarks. The scarce thing now is defining the right problem.
+The thesis is simple: we still treat LLMs as a function (input, output, compare), but the scope of what we can throw at them changed. Evaluating a model (question in, letter out) is not evaluating an agent (trajectory, tools, environment state). We're at halftime, as Shunyu Yao put it. Scale crushed most old benchmarks. The scarce thing now is defining the right problem.
 
 ## Next-word prediction
 
@@ -20,7 +20,7 @@ The instruments at the time were things like LAMBADA and MMLU. [LAMBADA](https:/
 
 If you only saw the last sentence, you'd never get it. You needed the full context. State-of-the-art models in 2016 got below 1% accuracy on LAMBADA. Humans got it every time.
 
-[MMLU](https://arxiv.org/abs/2009.03300) (Hendrycks et al., 2020) was the other pillar. It tested 57 subjects — math, law, medicine, history — with multiple-choice questions. Each question had four options, one correct answer. Here's one from the anatomy subset:
+[MMLU](https://arxiv.org/abs/2009.03300) (Hendrycks et al., 2020) was the other pillar. It tested 57 subjects (math, law, medicine, history) with multiple-choice questions. Each question had four options, one correct answer. Here's one from the anatomy subset:
 
 > **Question:** What is the embryological origin of the hyoid bone?  
 > **A)** The first pharyngeal arch  
@@ -46,7 +46,7 @@ To solve this, the model needed to find the right file in Django's codebase (tho
 
 When SWE-bench launched, the best model was Claude 2 with BM25 retrieval. It solved [1.96% of issues](https://proceedings.iclr.cc/paper_files/paper/2024/file/edac78c3e300629acfe6cbe9ca88fb84-Paper-Conference.pdf) unassisted. With oracle retrieval (you give it the exact files to edit), it got to 4.8%. Still brutal.
 
-The loop was the same — input, output, compare — but the ball was different. You weren't measuring next-word prediction anymore. You were measuring whether a model could navigate a real codebase and fix a bug.
+The loop was the same (input, output, compare) but the ball was different. You weren't measuring next-word prediction anymore. You were measuring whether a model could navigate a real codebase and fix a bug.
 
 ## The harness breakthrough
 
@@ -60,7 +60,7 @@ Devin proved that the way you let a model interact with the world matters as muc
 
 In September 2024, OpenAI released [o1](https://openai.com/index/learning-to-reason-with-llms/). The hook was "thinking before you answer." The model was trained with reinforcement learning to produce a long internal chain of thought before responding. Not prompted. Trained.
 
-The big insight: accuracy scales with test-time compute. Give o1 more time to think and it gets better. [The relationship is roughly log-linear](https://vibeengines.com/paper/o1-system-card) — every time you double the compute, accuracy goes up by a fixed amount. A new scaling law, but at inference time instead of training time.
+The big insight: accuracy scales with test-time compute. Give o1 more time to think and it gets better. [The relationship is roughly log-linear](https://vibeengines.com/paper/o1-system-card): every time you double the compute, accuracy goes up by a fixed amount. A new scaling law, but at inference time instead of training time.
 
 o1 ranked in the 89th percentile on Codeforces (competitive programming) and solved 83% of problems on the AIME math qualifier (vs. 13% for GPT-4o). Same loop: input a problem, output a solution, compare. Different axis: you scaled compute at inference, not training.
 
