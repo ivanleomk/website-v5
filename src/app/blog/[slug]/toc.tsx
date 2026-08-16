@@ -36,67 +36,72 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
         maxHeight: "calc(100vh - 12rem)",
       }}
     >
-      <div className="relative flex items-start gap-3 group">
-        <div className="relative flex flex-col items-center py-2">
-          <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-[#e5e5e5]" />
-          
-          {headings.map((h) => {
-            const isActive = activeId === h.id;
-            return (
-              <button
-                key={h.id}
-                onClick={(e) => {
-                  e.preventDefault();
-                  document
-                    .getElementById(h.id)
-                    ?.scrollIntoView({ behavior: "smooth" });
-                  setActiveId(h.id);
-                }}
-                className={`
-                  relative z-10 w-2 h-2 rounded-full transition-all duration-200
-                  ${isActive 
-                    ? "bg-[#282828] scale-125" 
-                    : "bg-[#d4d4d4] hover:bg-[#676767] hover:scale-110"
-                  }
-                  ${h.level === 3 ? "my-1.5" : "my-2"}
-                `}
-                aria-label={h.text}
-                title={h.text}
-              />
-            );
-          })}
-        </div>
+      <div className="relative overflow-y-auto" style={{ maxHeight: "calc(100vh - 12rem)" }}>
+        <div className="relative flex items-start gap-3 group py-2">
+          <div className="relative flex flex-col items-center">
+            <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-[#e5e5e5]" />
+            
+            {headings.map((h) => {
+              const isActive = activeId === h.id;
+              return (
+                <button
+                  key={h.id}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document
+                      .getElementById(h.id)
+                      ?.scrollIntoView({ behavior: "smooth" });
+                    setActiveId(h.id);
+                  }}
+                  className={`
+                    relative z-10 w-2 h-2 rounded-full transition-all duration-200 flex-shrink-0
+                    ${isActive 
+                      ? "bg-[#282828] scale-125" 
+                      : "bg-[#d4d4d4] hover:bg-[#676767] hover:scale-110"
+                    }
+                    ${h.level === 3 ? "my-1.5" : "my-2"}
+                  `}
+                  aria-label={h.text}
+                  title={h.text}
+                />
+              );
+            })}
+          </div>
 
-        <div className="flex flex-col overflow-y-auto" style={{ maxHeight: "calc(100vh - 12rem)" }}>
-          {headings.map((h) => {
-            const isActive = activeId === h.id;
-            return (
-              <a
-                key={h.id}
-                href={`#${h.id}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  document
-                    .getElementById(h.id)
-                    ?.scrollIntoView({ behavior: "smooth" });
-                  setActiveId(h.id);
-                }}
-                className={`
-                  py-2 text-[13px] leading-tight no-underline transition-all duration-150
-                  whitespace-nowrap
-                  opacity-0 group-hover:opacity-100
-                  ${h.level === 3 ? "pl-3" : "pl-0"}
-                  ${isActive 
-                    ? "text-[#282828] font-medium" 
-                    : "text-[#676767] hover:text-[#282828]"
-                  }
-                `}
-                style={{ fontFamily: "var(--font-serif)" }}
-              >
-                {h.text}
-              </a>
-            );
-          })}
+          <div className="flex flex-col">
+            {headings.map((h) => {
+              const isActive = activeId === h.id;
+              return (
+                <a
+                  key={h.id}
+                  href={`#${h.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document
+                      .getElementById(h.id)
+                      ?.scrollIntoView({ behavior: "smooth" });
+                    setActiveId(h.id);
+                  }}
+                  className={`
+                    text-[13px] leading-tight no-underline transition-all duration-150
+                    whitespace-nowrap flex-shrink-0
+                    opacity-0 group-hover:opacity-100
+                    ${h.level === 3 ? "pl-3 my-1.5" : "my-2"}
+                    ${isActive 
+                      ? "text-[#282828] font-medium" 
+                      : "text-[#676767] hover:text-[#282828]"
+                    }
+                  `}
+                  style={{ 
+                    fontFamily: "var(--font-serif)",
+                    lineHeight: "0.5rem"
+                  }}
+                >
+                  {h.text}
+                </a>
+              );
+            })}
+          </div>
         </div>
       </div>
     </nav>
