@@ -4,12 +4,16 @@
 import type { ComponentType } from "react";
 import type { MDXComponents } from "mdx/types";
 import agenticSearchContent, { frontmatter as agenticSearchFrontmatter } from "./agentic-search.mdx";
+import buildingReliableLlmApplicationsContent, { frontmatter as buildingReliableLlmApplicationsFrontmatter } from "./building-reliable-llm-applications.mdx";
 import grepBeatsSqliteFtsContent, { frontmatter as grepBeatsSqliteFtsFrontmatter } from "./grep-beats-sqlite-fts.mdx";
 import howDoesInstructorWorkContent, { frontmatter as howDoesInstructorWorkFrontmatter } from "./how-does-instructor-work.mdx";
 import mcpsAreReallyLlmMicroservicesContent, { frontmatter as mcpsAreReallyLlmMicroservicesFrontmatter } from "./mcps-are-really-llm-microservices.mdx";
 import migratingToReactInkContent, { frontmatter as migratingToReactInkFrontmatter } from "./migrating-to-react-ink.mdx";
+import reportErrorBarsContent, { frontmatter as reportErrorBarsFrontmatter } from "./report-error-bars.mdx";
+import runningBetterExperimentsContent, { frontmatter as runningBetterExperimentsFrontmatter } from "./running-better-experiments.mdx";
 import threeLessonsManusContent, { frontmatter as threeLessonsManusFrontmatter } from "./three-lessons-manus.mdx";
 import writeStupidEvalsContent, { frontmatter as writeStupidEvalsFrontmatter } from "./write-stupid-evals.mdx";
+import writingExtractionEvalsContent, { frontmatter as writingExtractionEvalsFrontmatter } from "./writing-extraction-evals.mdx";
 
 export type BlogFrontmatter = {
   title?: string;
@@ -91,6 +95,88 @@ export const blogPosts: BlogPost[] = [
         {
             "text": "Conclusion",
             "id": "conclusion",
+            "level": 2
+        }
+    ],
+  },
+  {
+    slug: "building-reliable-llm-applications",
+    frontmatter: buildingReliableLlmApplicationsFrontmatter,
+    Content: buildingReliableLlmApplicationsContent,
+    headings: [
+        {
+            "text": "The New Development Paradigm",
+            "id": "the-new-development-paradigm",
+            "level": 2
+        },
+        {
+            "text": "Structured Outputs",
+            "id": "structured-outputs",
+            "level": 2
+        },
+        {
+            "text": "Why Raw JSON is not enough",
+            "id": "why-raw-json-is-not-enough",
+            "level": 3
+        },
+        {
+            "text": "Beyond Simple Validation",
+            "id": "beyond-simple-validation",
+            "level": 3
+        },
+        {
+            "text": "Prioritising Iteration Speed",
+            "id": "prioritising-iteration-speed",
+            "level": 2
+        },
+        {
+            "text": "RAG Systems",
+            "id": "rag-systems",
+            "level": 3
+        },
+        {
+            "text": "Text-to-SQL",
+            "id": "text-to-sql",
+            "level": 3
+        },
+        {
+            "text": "Tool Selection",
+            "id": "tool-selection",
+            "level": 3
+        },
+        {
+            "text": "Query Understanding",
+            "id": "query-understanding",
+            "level": 2
+        },
+        {
+            "text": "The Value of Query Understanding",
+            "id": "the-value-of-query-understanding",
+            "level": 3
+        },
+        {
+            "text": "How Kura Works",
+            "id": "how-kura-works",
+            "level": 3
+        },
+        {
+            "text": "Validating with Synthetic Data",
+            "id": "validating-with-synthetic-data",
+            "level": 3
+        },
+        {
+            "text": "Getting Started with Kura",
+            "id": "getting-started-with-kura",
+            "level": 3
+        },
+        {
+            "text": "Conclusion",
+            "id": "conclusion",
+            "level": 2
+        },
+        {
+            "text": "Useful Links",
+            "id": "useful-links",
             "level": 2
         }
     ],
@@ -264,6 +350,105 @@ export const blogPosts: BlogPost[] = [
     ],
   },
   {
+    slug: "report-error-bars",
+    frontmatter: reportErrorBarsFrontmatter,
+    Content: reportErrorBarsContent,
+    headings: [
+        {
+            "text": "Why RAG metrics matter",
+            "id": "why-rag-metrics-matter",
+            "level": 2
+        },
+        {
+            "text": "Looking to the Future",
+            "id": "looking-to-the-future",
+            "level": 3
+        },
+        {
+            "text": "Business-Driven Evaluation",
+            "id": "business-driven-evaluation",
+            "level": 3
+        },
+        {
+            "text": "Comparing Three Retrieval Methods",
+            "id": "comparing-three-retrieval-methods",
+            "level": 2
+        },
+        {
+            "text": "Measuring Uncertainty with Bootstrapping",
+            "id": "measuring-uncertainty-with-bootstrapping",
+            "level": 2
+        },
+        {
+            "text": "Simplifying Bootstrap Analysis with `indomee`",
+            "id": "simplifying-bootstrap-analysis-with-indomee",
+            "level": 3
+        },
+        {
+            "text": "Computing metrics at different k values",
+            "id": "computing-metrics-at-different-k-values",
+            "level": 3
+        },
+        {
+            "text": "Working with Raw Bootstrap Data",
+            "id": "working-with-raw-bootstrap-data",
+            "level": 3
+        },
+        {
+            "text": "Testing for Statistical Significance",
+            "id": "testing-for-statistical-significance",
+            "level": 2
+        },
+        {
+            "text": "Simplifying t-tests with `indomee`",
+            "id": "simplifying-t-tests-with-indomee",
+            "level": 3
+        },
+        {
+            "text": "Conclusion",
+            "id": "conclusion",
+            "level": 2
+        }
+    ],
+  },
+  {
+    slug: "running-better-experiments",
+    frontmatter: runningBetterExperimentsFrontmatter,
+    Content: runningBetterExperimentsContent,
+    headings: [
+        {
+            "text": "Knowing what to vary",
+            "id": "knowing-what-to-vary",
+            "level": 2
+        },
+        {
+            "text": "Fast Feedback Loops",
+            "id": "fast-feedback-loops",
+            "level": 2
+        },
+        {
+            "text": "Benchmark Evaluation",
+            "id": "benchmark-evaluation",
+            "level": 3
+        },
+        {
+            "text": "Subjective Evaluation",
+            "id": "subjective-evaluation",
+            "level": 3
+        },
+        {
+            "text": "Sensitivity Testing",
+            "id": "sensitivity-testing",
+            "level": 2
+        },
+        {
+            "text": "Key Takeaways",
+            "id": "key-takeaways",
+            "level": 2
+        }
+    ],
+  },
+  {
     slug: "three-lessons-manus",
     frontmatter: threeLessonsManusFrontmatter,
     Content: threeLessonsManusContent,
@@ -319,6 +504,43 @@ export const blogPosts: BlogPost[] = [
             "text": "Building the Evaluation Muscle",
             "id": "building-the-evaluation-muscle",
             "level": 2
+        },
+        {
+            "text": "Conclusion",
+            "id": "conclusion",
+            "level": 2
+        }
+    ],
+  },
+  {
+    slug: "writing-extraction-evals",
+    frontmatter: writingExtractionEvalsFrontmatter,
+    Content: writingExtractionEvalsContent,
+    headings: [
+        {
+            "text": "The Initial Challenge",
+            "id": "the-initial-challenge",
+            "level": 2
+        },
+        {
+            "text": "Moving to Binary Metrics with Synthetic Data",
+            "id": "moving-to-binary-metrics-with-synthetic-data",
+            "level": 2
+        },
+        {
+            "text": "Starting with Synthetic Data",
+            "id": "starting-with-synthetic-data",
+            "level": 3
+        },
+        {
+            "text": "Using Citations",
+            "id": "using-citations",
+            "level": 3
+        },
+        {
+            "text": "Why Binary Metrics work",
+            "id": "why-binary-metrics-work",
+            "level": 3
         },
         {
             "text": "Conclusion",
