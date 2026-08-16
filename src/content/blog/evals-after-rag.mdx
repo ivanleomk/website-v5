@@ -1,0 +1,56 @@
+export const frontmatter = {
+  title: "Evals after RAG",
+  date: "2026-08-16",
+  author: "Ivan Leo",
+  description: "In 2025 I treated reliability as structured outputs and single-turn RAG. Now I treat it as a claim, a sample, and a number I can rerun.",
+}
+
+# Evals after RAG
+
+I wrote [Building Reliable LLM Applications](/blog/building-reliable-llm-applications) in January 2025. It is a talk I gave at NUS. The argument was: ship fast, put structured outputs around the model, use binary metrics and synthetic data so you can iterate.
+
+That was the right problem then. Most of the work I saw was single-turn. RAG. Extraction. A function that returned JSON. Reliability meant the model did not mangle the schema, and the retriever put the right chunk in the window.
+
+I still believe the boring parts. Start with an `assert`. Save the rows. Do not trust a 1% lift with a fat interval. I already wrote those down in [Write Stupid Evals](/blog/write-stupid-evals) and [Are your eval improvements just pure chance?](/blog/report-error-bars).
+
+What changed is the work.
+
+## 2025
+
+The input was a question or a document. The output was an answer, a JSON object, a list of chunks. Compare meant exact match, a citation hit, a Pydantic model that parsed.
+
+You could push the model. Better prompt. Better schema. Better k. Instructor made the compare step cheap, so we spent our time on the model.
+
+A benchmark was a folder of those items and a script that printed a percentage.
+
+## 2026
+
+The input is a repo, a ticket, a messy environment. The output is a trajectory. Compare means the tests went green, or a judge read a trace, or the environment ended in the right state.
+
+You cannot just push the model. The scaffold, the tools, the budget, and the grader move the number as much as the weights do. If you change the harness and keep the dataset, you have a new benchmark.
+
+The loop did not change. Input, output, compare. The ball got heavier.
+
+## Steal this
+
+Write the claim before you look at the score.
+
+> System S can complete task family X for population Y under conditions Z.
+
+Then refuse the leap. "47% of these repo issues" is close to what you saw. "Good at software engineering" is a story. "Generally intelligent" is an ad.
+
+Three eras, same loop, if you want the history:
+
+1. Finish the sentence. HellaSwag. The instrument died of success.
+2. Take the exam. MMLU, then MMLU-Pro. Question in, letter out.
+3. Ask something you cannot google. GPQA. Harder input. Same compare.
+
+After that the output is a patch. That is the 2026 problem.
+
+## What I am running next
+
+Same two workhorse models. GPT-5.6 Luna and Gemini Flash. Same harness. HellaSwag, MMLU-Pro, GPQA Diamond. Claim written first. Rows saved. Script public.
+
+Not "which lab is smarter." Just: here is what happened when I ran the old instruments on two models you can actually call.
+
+The 2025 post stays up. I am not going to rewrite a talk so it pretends I always thought this. If you want the structured-outputs version, it is still there. This page is what I would write if I gave that talk today.
