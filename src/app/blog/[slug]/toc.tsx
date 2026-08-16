@@ -124,21 +124,8 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
       >
         <div className="group bg-white/80 backdrop-blur-sm rounded-full border border-[#e5e5e5] shadow-sm px-2 py-2 transition-all duration-200 hover:px-2.5 hover:py-3">
           <div className="flex flex-col gap-2 relative group-hover:gap-2.5 transition-all duration-200">
-            {/* Sliding active indicator */}
-            <div
-              className="absolute right-0 transition-all ease-out pointer-events-none"
-              style={{
-                transform: `translateY(${headings.findIndex(h => h.id === (hoveredId || activeId)) * 32}px)`,
-                opacity: headings.findIndex(h => h.id === (hoveredId || activeId)) >= 0 ? 1 : 0,
-                transitionDuration: '250ms',
-              }}
-            >
-              <div className="px-1 py-1 group-hover:px-2 transition-all duration-200 flex items-center justify-end">
-                <span className="h-[1.5px] w-4 bg-[#282828] group-hover:w-5 transition-all duration-200" />
-              </div>
-            </div>
-
             {headings.map((h, index) => {
+              const isActive = activeId === h.id;
               const isHovered = hoveredId === h.id;
               return (
                 <div key={h.id} className="relative">
@@ -149,7 +136,15 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
                     className="px-1 py-1 cursor-pointer flex items-center justify-end group-hover:px-2 transition-all duration-200"
                     aria-label={h.text}
                   >
-                    <span className="h-[1.5px] w-3 bg-[#d4d4d4] group-hover:w-4 transition-all duration-200" />
+                    <span
+                      className={`
+                        h-[1.5px] transition-all duration-150
+                        ${isActive || isHovered
+                          ? "w-4 bg-[#282828] group-hover:w-5"
+                          : "w-3 bg-[#d4d4d4] group-hover:w-4"
+                        }
+                      `}
+                    />
                   </button>
                   
                   {/* Hover preview card */}
