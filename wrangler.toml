@@ -14,4 +14,4 @@ head_sampling_rate = 1
 invocation_logs = true
 
 [vars]
-SIGNUP_SECRET = "banana"
+SIGNUP_SECRET = "5834c2734916b71940e5bd286875df5fbe6a0aa93e192936"
