@@ -4,8 +4,27 @@ import { useState, useEffect } from "react";
 
 type Heading = { text: string; id: string; level: number };
 
+function getHeadingSnippet(headingId: string): string {
+  const heading = document.getElementById(headingId);
+  if (!heading) return "";
+  
+  let next = heading.nextElementSibling;
+  while (next && next.tagName !== "P") {
+    next = next.nextElementSibling;
+  }
+  
+  if (next?.textContent) {
+    const text = next.textContent.trim();
+    return text.length > 60 ? text.slice(0, 60) + "..." : text;
+  }
+  
+  return "";
+}
+
 export default function TableOfContents({ headings }: { headings: Heading[] }) {
   const [activeId, setActiveId] = useState(headings[0]?.id ?? "");
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [hoveredSnippet, setHoveredSnippet] = useState("");
 
   useEffect(() => {
     if (headings.length === 0) return;
@@ -27,48 +46,129 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
     return () => observer.disconnect();
   }, [headings]);
 
+  const handleDashHover = (headingId: string) => {
+    setHoveredId(headingId);
+    setHoveredSnippet(getHeadingSnippet(headingId));
+  };
+
+  const scrollToHeading = (headingId: string) => {
+    document.getElementById(headingId)?.scrollIntoView({ behavior: "smooth" });
+    setActiveId(headingId);
+  };
+
   return (
-    <nav
-      className="hidden xl:block absolute right-[calc(100%+2.5rem)] top-0 h-full w-[180px]"
-      aria-label="Table of contents"
-    >
-      <ul className="sticky top-24 space-y-0.5 list-none p-0 m-0">
-        {headings.map((h) => {
-          const isActive = activeId === h.id;
-          return (
-            <li
-              key={h.id}
-              className={`
-                font-sans text-[13.5px] leading-relaxed
-                border-l-[1.5px] transition-colors duration-200
-                ${h.level === 3 ? "pl-6" : "pl-3"}
-                ${isActive ? "border-[#282828]" : "border-transparent"}
-              `}
-            >
-              <a
-                href={`#${h.id}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  document
-                    .getElementById(h.id)
-                    ?.scrollIntoView({ behavior: "smooth" });
-                  setActiveId(h.id);
-                }}
-                className={`
-                  block py-1 no-underline transition-colors duration-150
-                  ${
-                    isActive
-                      ? "text-[#282828] font-semibold"
-                      : "text-[#676767] hover:text-[#282828]"
-                  }
-                `}
-              >
-                {h.text}
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+    <>
+      {/* Wide screens (xl:): Original text-based TOC in right gutter */}
+      <nav
+        className="hidden xl:block fixed z-10"
+        aria-label="Table of contents"
+        style={{
+          right: "max(2rem, calc((100vw - 800px) / 2 - 200px))",
+          top: "6rem",
+          width: "170px",
+        }}
+      >
+        <div className="sticky top-24">
+          {/* Back to blog control */}
+          <a
+            href="/blog"
+            className="inline-flex items-center gap-1 text-[12px] text-[#676767] hover:text-[#282828] no-underline transition-colors duration-150 mb-3 cursor-pointer"
+            style={{ fontFamily: "var(--font-serif)" }}
+          >
+            <span>←</span>
+            <span>Back</span>
+          </a>
+          
+          <ul className="space-y-1 list-none p-0 m-0">
+            {headings.map((h) => {
+              const isActive = activeId === h.id;
+              return (
+                <li
+                  key={h.id}
+                  className={`
+                    text-[14px] leading-snug
+                    border-l-[1.5px] transition-colors duration-200
+                    ${h.level === 3 ? "pl-5" : "pl-3"}
+                    ${isActive ? "border-[#282828]" : "border-transparent"}
+                  `}
+                  style={{ fontFamily: "var(--font-serif)" }}
+                >
+                  <a
+                    href={`#${h.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      scrollToHeading(h.id);
+                    }}
+                    className={`
+                      block py-1 no-underline transition-colors duration-150 cursor-pointer
+                      ${
+                        isActive
+                          ? "text-[#282828] font-semibold"
+                          : "text-[#676767] hover:text-[#282828]"
+                      }
+                    `}
+                  >
+                    {h.text}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </nav>
+
+      {/* Mid screens (md: to below xl:): Codex dash rail with hover previews */}
+      <nav
+        className="hidden md:block xl:hidden fixed right-6 top-1/2 -translate-y-1/2 z-10"
+        aria-label="Table of contents"
+      >
+        <div className="group bg-white/80 backdrop-blur-sm rounded-full border border-[#e5e5e5] shadow-sm px-2 py-2 transition-all duration-200 hover:px-2.5 hover:py-3">
+          <div className="flex flex-col gap-2 relative group-hover:gap-2.5 transition-all duration-200">
+            {headings.map((h, index) => {
+              const isActive = activeId === h.id;
+              const isHovered = hoveredId === h.id;
+              return (
+                <div key={h.id} className="relative">
+                  <button
+                    onClick={() => scrollToHeading(h.id)}
+                    onMouseEnter={() => handleDashHover(h.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                    className="px-1 py-1 cursor-pointer flex items-center justify-end group-hover:px-2 transition-all duration-200"
+                    aria-label={h.text}
+                  >
+                    <span
+                      className={`
+                        h-[1.5px] transition-all duration-150
+                        ${isActive || isHovered
+                          ? "w-4 bg-[#282828] group-hover:w-5"
+                          : "w-3 bg-[#d4d4d4] group-hover:w-4"
+                        }
+                      `}
+                    />
+                  </button>
+                  
+                  {/* Hover preview card */}
+                  {isHovered && (
+                    <div
+                      className="absolute right-10 top-1/2 -translate-y-1/2 bg-white rounded-md shadow-md px-2.5 py-2 w-56 pointer-events-none animate-in fade-in slide-in-from-right-2 duration-150"
+                      style={{ fontFamily: "var(--font-serif)" }}
+                    >
+                      <div className="font-semibold text-[13px] text-[#282828] mb-0.5 leading-tight">
+                        {h.text}
+                      </div>
+                      {hoveredSnippet && (
+                        <div className="text-[11px] text-[#676767] leading-snug line-clamp-1">
+                          {hoveredSnippet}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
+    </>
   );
 }
