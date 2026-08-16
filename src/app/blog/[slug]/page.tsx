@@ -104,6 +104,18 @@ export default async function Page({
         <article className="prose prose-neutral max-w-none prose-a:text-[#282828] prose-a:underline prose-a:decoration-[0.5px] prose-a:underline-offset-2">
           <MdxContent components={mdxComponents} />
         </article>
+
+        {/* Newsletter signup */}
+        <div className="mt-16 pt-8 border-t border-[#e5e5e5] text-[15px] text-[#676767]">
+          I send{" "}
+          <a
+            href="https://workingnotes.net"
+            className="text-[#282828] underline decoration-[0.5px] underline-offset-2"
+          >
+            Working Notes
+          </a>{" "}
+          every two weeks.
+        </div>
       </div>
     </main>
   );
