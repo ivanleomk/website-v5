@@ -107,10 +107,10 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
 
       {/* Mid screens (md: to below xl:): Codex dash rail with hover previews */}
       <nav
-        className="hidden md:block xl:hidden fixed left-6 top-1/2 -translate-y-1/2 z-10"
+        className="hidden md:block xl:hidden fixed right-6 top-1/2 -translate-y-1/2 z-10"
         aria-label="Table of contents"
       >
-        <div className="flex flex-col gap-3 relative">
+        <div className="flex flex-col gap-1 relative">
           {headings.map((h, index) => {
             const isActive = activeId === h.id;
             const isHovered = hoveredId === h.id;
@@ -120,20 +120,24 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
                   onClick={() => scrollToHeading(h.id)}
                   onMouseEnter={() => handleDashHover(h.id)}
                   onMouseLeave={() => setHoveredId(null)}
-                  className={`
-                    h-[2px] transition-all duration-200
-                    ${isActive || isHovered 
-                      ? "w-6 bg-[#282828]" 
-                      : "w-4 bg-[#d4d4d4] hover:bg-[#676767]"
-                    }
-                  `}
+                  className="px-2 py-2 cursor-pointer flex items-center justify-end"
                   aria-label={h.text}
-                />
+                >
+                  <span
+                    className={`
+                      h-[2px] transition-all duration-200
+                      ${isActive || isHovered 
+                        ? "w-6 bg-[#282828]" 
+                        : "w-4 bg-[#d4d4d4] hover:bg-[#676767]"
+                      }
+                    `}
+                  />
+                </button>
                 
                 {/* Hover preview card */}
                 {isHovered && (
                   <div
-                    className="absolute left-10 top-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-3 w-64 pointer-events-none"
+                    className="absolute right-10 top-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-3 w-64 pointer-events-none"
                     style={{ fontFamily: "var(--font-serif)" }}
                   >
                     <div className="font-semibold text-[14px] text-[#282828] mb-1">
