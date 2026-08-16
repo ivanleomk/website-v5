@@ -10,6 +10,16 @@ const nextConfig: NextConfig = {
         destination: "/blog/:slug",
         permanent: true,
       },
+      {
+        source: "/blog/braintrust-from-scratch",
+        destination: "/blog/building-reliable-llm-applications",
+        permanent: true,
+      },
+      {
+        source: "/blog/getting-started-with-evals---a-speedrun-through-braintrust",
+        destination: "/blog/building-reliable-llm-applications",
+        permanent: true,
+      },
     ];
   },
   turbopack: {
