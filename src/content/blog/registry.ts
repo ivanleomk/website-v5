@@ -7,7 +7,6 @@ import agenticSearchContent, { frontmatter as agenticSearchFrontmatter } from ".
 import buildingReliableLlmApplicationsContent, { frontmatter as buildingReliableLlmApplicationsFrontmatter } from "./building-reliable-llm-applications.mdx";
 import grepBeatsSqliteFtsContent, { frontmatter as grepBeatsSqliteFtsFrontmatter } from "./grep-beats-sqlite-fts.mdx";
 import howDoesInstructorWorkContent, { frontmatter as howDoesInstructorWorkFrontmatter } from "./how-does-instructor-work.mdx";
-import mcpsAreReallyLlmMicroservicesContent, { frontmatter as mcpsAreReallyLlmMicroservicesFrontmatter } from "./mcps-are-really-llm-microservices.mdx";
 import migratingToReactInkContent, { frontmatter as migratingToReactInkFrontmatter } from "./migrating-to-react-ink.mdx";
 import reportErrorBarsContent, { frontmatter as reportErrorBarsFrontmatter } from "./report-error-bars.mdx";
 import runningBetterExperimentsContent, { frontmatter as runningBetterExperimentsFrontmatter } from "./running-better-experiments.mdx";
@@ -246,43 +245,6 @@ export const blogPosts: BlogPost[] = [
         {
             "text": "Why you probably shouldn't roll your own",
             "id": "why-you-probably-shouldnt-roll-your-own",
-            "level": 2
-        }
-    ],
-  },
-  {
-    slug: "mcps-are-really-llm-microservices",
-    frontmatter: mcpsAreReallyLlmMicroservicesFrontmatter,
-    Content: mcpsAreReallyLlmMicroservicesContent,
-    headings: [
-        {
-            "text": "The Current State of Tool Integration",
-            "id": "the-current-state-of-tool-integration",
-            "level": 2
-        },
-        {
-            "text": "Understanding MCPs: More Than Just Another API Spec",
-            "id": "understanding-mcps-more-than-just-another-api-spec",
-            "level": 2
-        },
-        {
-            "text": "The Infrastructure Gap",
-            "id": "the-infrastructure-gap",
-            "level": 2
-        },
-        {
-            "text": "Looking Forward: Adaptive AI Microservices",
-            "id": "looking-forward-adaptive-ai-microservices",
-            "level": 2
-        },
-        {
-            "text": "Monetized Specialisation",
-            "id": "monetized-specialisation",
-            "level": 3
-        },
-        {
-            "text": "Conclusion",
-            "id": "conclusion",
             "level": 2
         }
     ],
