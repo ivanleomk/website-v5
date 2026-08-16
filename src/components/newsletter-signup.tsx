@@ -23,14 +23,13 @@ export default function NewsletterSignup({ className = "" }: NewsletterSignupPro
     setMessage("");
 
     try {
-      const response = await fetch("https://workingnotes.net/sign-up", {
+      const response = await fetch("/api/subscribe", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email: email.trim(),
-          source: "ivanleo.com",
         }),
       });
 
@@ -39,7 +38,12 @@ export default function NewsletterSignup({ className = "" }: NewsletterSignupPro
       if (response.ok) {
         setState("success");
         if (data.status === "pending") {
-          setMessage(data.message || "Check your inbox to confirm your subscription.");
+          const apiMessage = data.message || "Thanks for signing up.";
+          setMessage(
+            /inbox|confirm/i.test(apiMessage)
+              ? apiMessage
+              : `${apiMessage} Confirm the subscription from your inbox.`
+          );
         } else if (data.status === "already_active") {
           setMessage(data.message || "You're already subscribed.");
         } else {
