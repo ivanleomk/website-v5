@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { blogPosts, getBlogPost } from "@/content/blog/registry";
 import TableOfContents from "./toc";
+import NewsletterSignup from "@/components/newsletter-signup";
 import type { Metadata } from "next";
 
 export function generateStaticParams() {
@@ -104,6 +105,14 @@ export default async function Page({
         <article className="prose prose-neutral max-w-none prose-a:text-[#282828] prose-a:underline prose-a:decoration-[0.5px] prose-a:underline-offset-2">
           <MdxContent components={mdxComponents} />
         </article>
+
+        {/* Newsletter signup */}
+        <div className="mt-16 pt-8 border-t border-[#e5e5e5]">
+          <p className="text-[15px] text-[#676767] mb-4">
+            I send Working Notes every two weeks.
+          </p>
+          <NewsletterSignup />
+        </div>
       </div>
     </main>
   );
