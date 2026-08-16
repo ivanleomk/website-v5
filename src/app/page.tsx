@@ -29,7 +29,7 @@ export default function Home() {
   ];
 
   return (
-    <main className="max-w-[660px] mx-auto px-6 py-12 md:py-16">
+    <main className="max-w-[800px] mx-auto px-6 py-12 md:py-16">
       {/* Introduction */}
       <div className="mb-16 font-serif text-[17px] leading-[1.65] text-[#282828]">
         <p className="mt-6">

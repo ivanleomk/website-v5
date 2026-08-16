@@ -3,9 +3,9 @@
 @plugin "@tailwindcss/typography";
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-serif);
   --font-mono: var(--font-geist-mono);
-  --font-serif: "Iowan Old Style BT", Georgia, "Times New Roman", serif;
+  --font-serif: var(--font-serif), Georgia, "Times New Roman", serif;
 }
 
 :root {
@@ -17,6 +17,9 @@
 body {
   background: var(--bg);
   color: var(--fg);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.6;
 }
 
 /* Scroll offset for article headings to prevent flushing to the top when navigating */
@@ -25,41 +28,38 @@ article h3 {
   scroll-margin-top: 6rem; /* 96px offset, matches the sticky top-24 of the TOC */
 }
 
-/* Code & Highlight.js premium styling overrides */
+/* Code & Highlight.js styling */
 .prose pre {
-  background-color: #0d1117 !important; /* GitHub dark color theme */
-  border: 1px solid #21262d;
-  padding: 1.25rem !important;
-  border-radius: 0.5rem !important;
-  overflow-x: auto !important;
+  background-color: #0d1117;
+  padding: 1.25rem;
+  overflow-x: auto;
 }
 
 .prose pre code {
-  background-color: transparent !important;
-  color: #c9d1d9 !important;
-  font-size: 13.5px !important;
-  line-height: 1.6 !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
-  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  background-color: transparent;
+  color: #c9d1d9;
+  font-size: 13.5px;
+  line-height: 1.6;
+  padding: 0;
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 /* Remove tailwind prose default backticks */
 .prose code::before {
-  content: "" !important;
+  content: "";
 }
 .prose code::after {
-  content: "" !important;
+  content: "";
 }
 
 /* Inline code styling */
 .prose :not(pre) > code {
-  background-color: #f3f4f6 !important;
-  color: #282828 !important;
-  padding: 0.2rem 0.4rem !important;
-  border-radius: 0.25rem !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  background-color: #f3f4f6;
+  color: #282828;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 

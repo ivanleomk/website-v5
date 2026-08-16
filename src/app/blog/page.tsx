@@ -28,7 +28,7 @@ export default function BlogIndex() {
   const posts = getPosts();
 
   return (
-    <main className="max-w-[660px] mx-auto px-6 py-12 md:py-16">
+    <main className="max-w-[800px] mx-auto px-6 py-12 md:py-16">
       <header className="mb-12">
         <h1 className="font-sans text-[18px] font-bold tracking-tight text-[#282828]">
           Writing
