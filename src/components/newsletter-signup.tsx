@@ -23,6 +23,8 @@ export default function NewsletterSignup({ className = "" }: NewsletterSignupPro
     setMessage("");
 
     try {
+      const secret = process.env.NEXT_PUBLIC_NEWSLETTER_SECRET;
+      
       const response = await fetch("https://workingnotes.net/sign-up", {
         method: "POST",
         headers: {
@@ -31,6 +33,7 @@ export default function NewsletterSignup({ className = "" }: NewsletterSignupPro
         body: JSON.stringify({
           email: email.trim(),
           source: "ivanleo.com",
+          secret: secret,
         }),
       });
 
