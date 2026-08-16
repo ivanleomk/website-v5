@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NewsletterSignup from "@/components/newsletter-signup";
 
 export default function Home() {
   const selectedEssays = [
@@ -94,6 +95,17 @@ export default function Home() {
             </li>
           ))}
         </ul>
+      </section>
+
+      {/* Newsletter signup */}
+      <section className="mt-20 pt-10 border-t border-gray-100">
+        <h2 className="font-sans text-[13px] font-bold uppercase tracking-widest text-[#676767] mb-3">
+          Working Notes
+        </h2>
+        <p className="text-[15px] text-[#676767] mb-4 font-serif">
+          Essays on evals, agents, and LLM engineering. Every two weeks.
+        </p>
+        <NewsletterSignup />
       </section>
 
       {/* Footer / Social links */}
