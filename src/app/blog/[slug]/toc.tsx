@@ -29,23 +29,49 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
 
   return (
     <nav
-      className="hidden xl:block absolute right-[calc(100%+2.5rem)] top-0 h-full w-[180px]"
+      className="hidden lg:block fixed left-8 top-1/2 -translate-y-1/2 z-10"
       aria-label="Table of contents"
+      style={{
+        maxHeight: "calc(100vh - 12rem)",
+      }}
     >
-      <ul className="sticky top-24 space-y-0.5 list-none p-0 m-0">
-        {headings.map((h) => {
-          const isActive = activeId === h.id;
-          return (
-            <li
-              key={h.id}
-              className={`
-                font-sans text-[13.5px] leading-relaxed
-                border-l-[1.5px] transition-colors duration-200
-                ${h.level === 3 ? "pl-6" : "pl-3"}
-                ${isActive ? "border-[#282828]" : "border-transparent"}
-              `}
-            >
+      <div className="relative flex items-start gap-3 group">
+        <div className="relative flex flex-col items-center py-2">
+          <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-[#e5e5e5]" />
+          
+          {headings.map((h) => {
+            const isActive = activeId === h.id;
+            return (
+              <button
+                key={h.id}
+                onClick={(e) => {
+                  e.preventDefault();
+                  document
+                    .getElementById(h.id)
+                    ?.scrollIntoView({ behavior: "smooth" });
+                  setActiveId(h.id);
+                }}
+                className={`
+                  relative z-10 w-2 h-2 rounded-full transition-all duration-200
+                  ${isActive 
+                    ? "bg-[#282828] scale-125" 
+                    : "bg-[#d4d4d4] hover:bg-[#676767] hover:scale-110"
+                  }
+                  ${h.level === 3 ? "my-1.5" : "my-2"}
+                `}
+                aria-label={h.text}
+                title={h.text}
+              />
+            );
+          })}
+        </div>
+
+        <div className="flex flex-col overflow-y-auto" style={{ maxHeight: "calc(100vh - 12rem)" }}>
+          {headings.map((h) => {
+            const isActive = activeId === h.id;
+            return (
               <a
+                key={h.id}
                 href={`#${h.id}`}
                 onClick={(e) => {
                   e.preventDefault();
@@ -55,20 +81,22 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
                   setActiveId(h.id);
                 }}
                 className={`
-                  block py-1 no-underline transition-colors duration-150
-                  ${
-                    isActive
-                      ? "text-[#282828] font-semibold"
-                      : "text-[#676767] hover:text-[#282828]"
+                  py-2 text-[13px] leading-tight no-underline transition-all duration-150
+                  opacity-0 group-hover:opacity-100
+                  ${h.level === 3 ? "pl-3" : "pl-0"}
+                  ${isActive 
+                    ? "text-[#282828] font-medium" 
+                    : "text-[#676767] hover:text-[#282828]"
                   }
                 `}
+                style={{ fontFamily: "var(--font-serif)" }}
               >
                 {h.text}
               </a>
-            </li>
-          );
-        })}
-      </ul>
+            );
+          })}
+        </div>
+      </div>
     </nav>
   );
 }
