@@ -5,6 +5,7 @@ import type { ComponentType } from "react";
 import type { MDXComponents } from "mdx/types";
 import agenticSearchContent, { frontmatter as agenticSearchFrontmatter } from "./agentic-search.mdx";
 import buildingReliableLlmApplicationsContent, { frontmatter as buildingReliableLlmApplicationsFrontmatter } from "./building-reliable-llm-applications.mdx";
+import evalsAfterRagContent, { frontmatter as evalsAfterRagFrontmatter } from "./evals-after-rag.mdx";
 import grepBeatsSqliteFtsContent, { frontmatter as grepBeatsSqliteFtsFrontmatter } from "./grep-beats-sqlite-fts.mdx";
 import howDoesInstructorWorkContent, { frontmatter as howDoesInstructorWorkFrontmatter } from "./how-does-instructor-work.mdx";
 import migratingToReactInkContent, { frontmatter as migratingToReactInkFrontmatter } from "./migrating-to-react-ink.mdx";
@@ -176,6 +177,33 @@ export const blogPosts: BlogPost[] = [
         {
             "text": "Useful Links",
             "id": "useful-links",
+            "level": 2
+        }
+    ],
+  },
+  {
+    slug: "evals-after-rag",
+    frontmatter: evalsAfterRagFrontmatter,
+    Content: evalsAfterRagContent,
+    headings: [
+        {
+            "text": "2025",
+            "id": "2025",
+            "level": 2
+        },
+        {
+            "text": "2026",
+            "id": "2026",
+            "level": 2
+        },
+        {
+            "text": "Steal this",
+            "id": "steal-this",
+            "level": 2
+        },
+        {
+            "text": "What I am running next",
+            "id": "what-i-am-running-next",
             "level": 2
         }
     ],
