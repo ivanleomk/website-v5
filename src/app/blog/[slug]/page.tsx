@@ -67,17 +67,6 @@ export default async function Page({
         </div>
       </header>
 
-      {/* Cover image — full measure, natural aspect ratio */}
-      {frontmatter.cover && (
-        <div className="mb-16">
-          <img
-            src={frontmatter.cover}
-            alt={frontmatter.title}
-            className="w-full h-auto"
-          />
-        </div>
-      )}
-
       {/* Body: article with optional TOC */}
       <div className="relative">
         {/* Table of Contents — only for longer posts */}
