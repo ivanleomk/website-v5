@@ -122,49 +122,51 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
         className="hidden md:block xl:hidden fixed right-6 top-1/2 -translate-y-1/2 z-10"
         aria-label="Table of contents"
       >
-        <div className="flex flex-col gap-1 relative">
-          {headings.map((h, index) => {
-            const isActive = activeId === h.id;
-            const isHovered = hoveredId === h.id;
-            return (
-              <div key={h.id} className="relative">
-                <button
-                  onClick={() => scrollToHeading(h.id)}
-                  onMouseEnter={() => handleDashHover(h.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                  className="px-2 py-2 cursor-pointer flex items-center justify-end"
-                  aria-label={h.text}
-                >
-                  <span
-                    className={`
-                      h-[2px] transition-all duration-200
-                      ${isActive || isHovered 
-                        ? "w-6 bg-[#282828]" 
-                        : "w-4 bg-[#d4d4d4] hover:bg-[#676767]"
-                      }
-                    `}
-                  />
-                </button>
-                
-                {/* Hover preview card */}
-                {isHovered && (
-                  <div
-                    className="absolute right-10 top-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-3 w-64 pointer-events-none"
-                    style={{ fontFamily: "var(--font-serif)" }}
+        <div className="group bg-white rounded-full border border-[#eee] shadow-sm px-2 py-3 transition-all duration-200 hover:px-3 hover:py-4">
+          <div className="flex flex-col gap-2 relative group-hover:gap-3 transition-all duration-200">
+            {headings.map((h, index) => {
+              const isActive = activeId === h.id;
+              const isHovered = hoveredId === h.id;
+              return (
+                <div key={h.id} className="relative">
+                  <button
+                    onClick={() => scrollToHeading(h.id)}
+                    onMouseEnter={() => handleDashHover(h.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                    className="px-1 py-1 cursor-pointer flex items-center justify-end group-hover:px-2 transition-all duration-200"
+                    aria-label={h.text}
                   >
-                    <div className="font-semibold text-[14px] text-[#282828] mb-1">
-                      {h.text}
-                    </div>
-                    {hoveredSnippet && (
-                      <div className="text-[12px] text-[#676767] leading-snug">
-                        {hoveredSnippet}
+                    <span
+                      className={`
+                        h-[2px] transition-all duration-200
+                        ${isActive || isHovered 
+                          ? "w-5 bg-[#282828] group-hover:w-6" 
+                          : "w-3 bg-[#d4d4d4] hover:bg-[#676767] group-hover:w-4"
+                        }
+                      `}
+                    />
+                  </button>
+                  
+                  {/* Hover preview card */}
+                  {isHovered && (
+                    <div
+                      className="absolute right-12 top-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-3 w-64 pointer-events-none"
+                      style={{ fontFamily: "var(--font-serif)" }}
+                    >
+                      <div className="font-semibold text-[14px] text-[#282828] mb-1">
+                        {h.text}
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                      {hoveredSnippet && (
+                        <div className="text-[12px] text-[#676767] leading-snug">
+                          {hoveredSnippet}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </nav>
     </>
