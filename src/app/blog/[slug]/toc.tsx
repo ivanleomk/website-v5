@@ -15,7 +15,7 @@ function getHeadingSnippet(headingId: string): string {
   
   if (next?.textContent) {
     const text = next.textContent.trim();
-    return text.length > 80 ? text.slice(0, 80) + "..." : text;
+    return text.length > 60 ? text.slice(0, 60) + "..." : text;
   }
   
   return "";
@@ -122,10 +122,23 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
         className="hidden md:block xl:hidden fixed right-6 top-1/2 -translate-y-1/2 z-10"
         aria-label="Table of contents"
       >
-        <div className="group bg-white rounded-full border border-[#eee] shadow-sm px-2 py-3 transition-all duration-200 hover:px-3 hover:py-4">
-          <div className="flex flex-col gap-2 relative group-hover:gap-3 transition-all duration-200">
+        <div className="group bg-white/80 backdrop-blur-sm rounded-full border border-[#e5e5e5] shadow-sm px-2 py-2 transition-all duration-200 hover:px-2.5 hover:py-3">
+          <div className="flex flex-col gap-2 relative group-hover:gap-2.5 transition-all duration-200">
+            {/* Sliding active indicator */}
+            <div
+              className="absolute right-0 transition-all ease-out pointer-events-none"
+              style={{
+                transform: `translateY(${headings.findIndex(h => h.id === (hoveredId || activeId)) * 32}px)`,
+                opacity: headings.findIndex(h => h.id === (hoveredId || activeId)) >= 0 ? 1 : 0,
+                transitionDuration: '250ms',
+              }}
+            >
+              <div className="px-1 py-1 group-hover:px-2 transition-all duration-200 flex items-center justify-end">
+                <span className="h-[1.5px] w-4 bg-[#282828] group-hover:w-5 transition-all duration-200" />
+              </div>
+            </div>
+
             {headings.map((h, index) => {
-              const isActive = activeId === h.id;
               const isHovered = hoveredId === h.id;
               return (
                 <div key={h.id} className="relative">
@@ -136,28 +149,20 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
                     className="px-1 py-1 cursor-pointer flex items-center justify-end group-hover:px-2 transition-all duration-200"
                     aria-label={h.text}
                   >
-                    <span
-                      className={`
-                        h-[2px] transition-all duration-200
-                        ${isActive || isHovered 
-                          ? "w-5 bg-[#282828] group-hover:w-6" 
-                          : "w-3 bg-[#d4d4d4] hover:bg-[#676767] group-hover:w-4"
-                        }
-                      `}
-                    />
+                    <span className="h-[1.5px] w-3 bg-[#d4d4d4] group-hover:w-4 transition-all duration-200" />
                   </button>
                   
                   {/* Hover preview card */}
                   {isHovered && (
                     <div
-                      className="absolute right-12 top-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-3 w-64 pointer-events-none"
+                      className="absolute right-10 top-1/2 -translate-y-1/2 bg-white rounded-md shadow-md px-2.5 py-2 w-56 pointer-events-none animate-in fade-in slide-in-from-right-2 duration-150"
                       style={{ fontFamily: "var(--font-serif)" }}
                     >
-                      <div className="font-semibold text-[14px] text-[#282828] mb-1">
+                      <div className="font-semibold text-[13px] text-[#282828] mb-0.5 leading-tight">
                         {h.text}
                       </div>
                       {hoveredSnippet && (
-                        <div className="text-[12px] text-[#676767] leading-snug">
+                        <div className="text-[11px] text-[#676767] leading-snug line-clamp-1">
                           {hoveredSnippet}
                         </div>
                       )}
