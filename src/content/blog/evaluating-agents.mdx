@@ -2,109 +2,117 @@ export const frontmatter = {
   title: "Evaluating agents is not evaluating models",
   date: "2026-08-16",
   author: "Ivan Leo",
-  description: "The loop stayed the same — input, output, compare — but the ball changed from quizzes to trajectories.",
+  description: "Evaluating agents is not evaluating models. The function stayed the same. The hard part is now picking the right problem.",
 }
 
-I gave a talk at [Digital Jungle](http://luma.com/qdl9mr2e?tk=P3UvLA) earlier this year. Not to pitch something new, just to map the last few years of evals. I'd spent 2024 building [Manus](https://manus.im), an agent that ran multiple turns and edited real code. Before that, I wrote about [building reliable LLM applications](/blog/building-reliable-llm-applications): RAG pipelines, structured outputs, single-turn stuff. That post still holds. This is the 2026 update.
+I gave a talk at [Digital Jungle](http://luma.com/qdl9mr2e?tk=P3UvLA) earlier this year. I was mapping evals, not inventing them. In 2025 I wrote [Building Reliable LLM Applications](/blog/building-reliable-llm-applications): RAG, structured outputs, single-turn stuff. Agents that run many turns between user messages were not the job then. This is the 2026 update.
 
-The thesis is simple: we still treat LLMs as a function (input, output, compare), but the scope of what we can throw at them changed. Evaluating a model (question in, letter out) is not evaluating an agent (trajectory, tools, environment state). We're at halftime, as Shunyu Yao put it. Scale crushed most old benchmarks. The scarce thing now is defining the right problem.
+The difficult challenge has now shifted to finding the right problem for LLM evals. We used to struggle to get a model to pick the right letter on a quiz. Now the models crush those quizzes, and the work is deciding what "pass" even means when the thing you're measuring can run for forty turns, call tools, and leave a database in the wrong state.
 
-## Next-word prediction
+We still treat the LLM as a function. You throw something in, you get something out, you compare. What changed is the scope of what we can throw at that function, and how the model itself is trained. Evaluating a model (question in, letter out) is not evaluating an agent (trajectory, tools, environment state).
 
-In February 2019, OpenAI released [GPT-2](https://openai.com/index/better-language-models/) and wouldn't release the full weights. The [announcement](https://openai.com/index/better-language-models/) said they were concerned about "large language models being used to generate deceptive, biased, or abusive language at scale." The model was trained to predict the next word on 40GB of internet text. That was it. Next-word prediction.
+[Shunyu Yao](https://ysymyth.github.io/The-Second-Half/) called this AI's halftime. First half: invent better training methods. Second half: define the right problem. I buy that.
 
-The instruments at the time were things like LAMBADA and MMLU. [LAMBADA](https://aclanthology.org/P16-1144/) (Paperno et al., ACL 2016) tested whether a model could predict the final word of a passage when you needed the whole story to guess it. Here's a real example from the paper:
+## How we got here, quickly
 
-> "Yes, I thought I was going to lose the baby." "I was scared too," he stated, sincerity flooding his eyes. "You were?" "Yes, of course. Why do you even ask?" "This baby wasn't exactly planned for."  
+Training used to be next-word prediction. In 2019, [OpenAI trained GPT-2](https://openai.com/index/better-language-models/) "simply to predict the next word in 40GB of Internet text" and would not release the full weights. The evals matched that job: finish a sentence, pick a letter.
+
+Then the recipe got bigger. Scale. Then [o1](https://openai.com/index/learning-to-reason-with-llms/) in September 2024: reasoning trained in with RL, not just prompted. OpenAI's point was that accuracy goes up if you spend more compute at test time, not only at train time. On the 2024 AIME, GPT-4o averaged 12% (1.8/15). o1 averaged 74% with one sample and 83% with consensus among 64 samples. Same function call. More thinking inside it.
+
+Evals followed the same curve. LAMBADA and MMLU asked for a word or a letter. SWE-bench asked for a patch in a real repo. Devin showed that wrapping the model in a harness (shell, editor, retry) is a different measurement than a single completion. Claude 3.7 Sonnet plus Claude Code later reported 70.3% on SWE-bench Verified. Then τ-bench stopped scoring the prose and started scoring the database.
+
+```
+LAMBADA / MMLU     next word or a letter
+SWE-bench          issue in, patch out, tests compare
+Devin (Mar 2024)   same dataset, now a tool loop
+o1 (Sep 2024)      train the thinking, not just the next token
+70% on Verified    then tau-bench scores the database
+```
+
+That's the whole map. Same `f(x) -> y`. The `x` got a lot larger.
+
+## Next word, then a letter
+
+[LAMBADA](https://aclanthology.org/P16-1144/) (Paperno et al., ACL 2016) is a next-word test where the last word is easy if you read the whole passage and impossible if you only see the last sentence. From Figure 1 of the paper:
+
+> "Yes, I thought I was going to lose the baby." "I was scared too," he stated, sincerity flooding his eyes. "You were?" "Yes, of course. Why do you even ask?" "This baby wasn't exactly planned for."
+>
 > **Target word:** miscarriage
 
-If you only saw the last sentence, you'd never get it. You needed the full context. State-of-the-art models in 2016 got below 1% accuracy on LAMBADA. Humans got it every time.
+Input: passage. Output: one word. Compare: exact match. Models in 2016 were under 1%. Humans got it.
 
-[MMLU](https://arxiv.org/abs/2009.03300) (Hendrycks et al., 2020) was the other pillar. It tested 57 subjects (math, law, medicine, history) with multiple-choice questions. Each question had four options, one correct answer. Here's one from the anatomy subset:
+[MMLU](https://arxiv.org/abs/2009.03300) (Hendrycks et al., 2020) is the quiz version. 57 subjects, four options, one letter. Hugging Face's official example from the anatomy split:
 
-> **Question:** What is the embryological origin of the hyoid bone?  
-> **A)** The first pharyngeal arch  
-> **B)** The first and second pharyngeal arches  
-> **C)** The second pharyngeal arch  
-> **D)** The second and third pharyngeal arches  
+> **Question:** What is the embryological origin of the hyoid bone?
+>
+> **A.** The first pharyngeal arch
+>
+> **B.** The first and second pharyngeal arches
+>
+> **C.** The second pharyngeal arch
+>
+> **D.** The second and third pharyngeal arches
+>
 > **Answer:** D
 
-When MMLU came out, GPT-3 175B hit 43.9%. Random chance is 25%. The creators estimated expert humans got around 89.8%. The test was hard.
+Input: question. Output: `A`/`B`/`C`/`D`. Compare: did you pick D? When the paper came out, GPT-3 175B hit 43.9%. Random is 25%. The authors estimated expert humans around 89.8%. That used to be hard.
 
-Both benchmarks measured the same thing: input a prompt, output a completion, compare the answer. The model never took an action. It never changed anything. It just predicted text.
+A single-shot MMLU item is one forward pass and a letter. An o1-style eval on the same item is still a letter, but the model is allowed (and trained) to spend a long private chain of thought first. You are still scoring the letter. You are not scoring a trajectory.
 
-## Putting models in repos
+## Then we put the model in a repo
 
-[SWE-bench](https://www.swebench.com/) (Jimenez et al., ICLR 2024) changed the game. Instead of asking a model to answer a question, you gave it a real GitHub issue and asked it to write a patch. The input was the issue description. The output was a code change. The comparison was running the tests.
+[SWE-bench](https://www.swebench.com/) (Jimenez et al., ICLR 2024) keeps the function, changes the scope. Input is a GitHub issue. Output is a patch. Compare is: do the tests pass?
 
-Here's a real example from the [SWE-bench dataset](https://github.com/princeton-nlp/SWE-bench), issue `django/django#13447`:
+A real item from the benchmark is `django__django-10097` ([SWE-bench](https://github.com/princeton-nlp/SWE-bench), [PR](https://github.com/django/django/pull/10097)):
 
-> **Issue:** `QuerySet.in_bulk()` doesn't work with field_name='pk'  
-> If `field_name='pk'` is passed to `QuerySet.in_bulk()`, the result will have the model's id in the field name (e.g. `mymodel_id`) as the key instead of `pk`.
+> **Issue:** Make `URLValidator` reject invalid characters in the username and password
+>
+> URLs with un-escaped `/`, `@` or `:` characters in the username or password fields should be rejected.
 
-To solve this, the model needed to find the right file in Django's codebase (thousands of lines across hundreds of files), understand how `in_bulk()` worked, write a fix, and make sure the tests passed. Not a quiz. An engineering task.
+You are not guessing a word. You are finding the right file in Django, writing a fix, and surviving the test suite.
 
-When SWE-bench launched, the best model was Claude 2 with BM25 retrieval. It solved [1.96% of issues](https://proceedings.iclr.cc/paper_files/paper/2024/file/edac78c3e300629acfe6cbe9ca88fb84-Paper-Conference.pdf) unassisted. With oracle retrieval (you give it the exact files to edit), it got to 4.8%. Still brutal.
+At launch, Claude 2 resolved [1.96% of issues](https://arxiv.org/abs/2310.06770) with BM25 retrieval, and 4.8% if you handed it the right files. That is the "model in a repo" number. Bare completion, no agent loop.
 
-The loop was the same (input, output, compare) but the ball was different. You weren't measuring next-word prediction anymore. You were measuring whether a model could navigate a real codebase and fix a bug.
+## The harness is a different instrument
 
-## The harness breakthrough
+In March 2024, [Cognition's Devin](https://cognition.com/blog/swe-bench-technical-report) resolved 13.86% on a random 25% slice of SWE-bench (79 of 570). Not because someone trained a totally new base model overnight. Because the model could run commands, edit files, read the output, and try again.
 
-In March 2024, [Cognition released Devin](https://cognition.com/blog/swe-bench-technical-report) and hit 13.86% on SWE-bench. Not a new model. A new harness. Devin could run shell commands, edit files, check outputs, retry. It had a loop. The model stayed the same (or close to it), but the scaffold around it changed everything.
+A harness run is not a benchmark item. It looks more like this:
 
-This was the moment we realized that changing the scaffold is a new benchmark. You can't compare a bare model to an agent with a terminal, a file editor, and a retry budget. Different instruments. Different measurements.
+```
+issue
+  -> model picks a tool (bash / edit / read)
+  -> environment returns stdout or a diff
+  -> model tries again
+  -> ...
+  -> patch
+  -> tests
+```
 
-Devin proved that the way you let a model interact with the world matters as much as the model itself. Two months from 2% to 14% wasn't about pretraining. It was about giving the model tools and letting it act.
+You still compare with tests. But the thing you ran is a loop, not a completion. Cognition's own writeup is the point: the previous best unassisted baseline was 1.96%. Changing the scaffold moved the number to ~14%. That is a new measurement, even if the dataset is the same.
 
-## Test-time compute
+## Two years later the old test is mostly solved
 
-In September 2024, OpenAI released [o1](https://openai.com/index/learning-to-reason-with-llms/). The hook was "thinking before you answer." The model was trained with reinforcement learning to produce a long internal chain of thought before responding. Not prompted. Trained.
+In February 2025, Anthropic reported [Claude 3.7 Sonnet](https://www.anthropic.com/news/claude-3-7-sonnet) at 70.3% on SWE-bench Verified with a high-compute scaffold (parallel samples, reject patches that break visible tests, rank the rest). Without that extra scaffold, 63.7% on the same 489-task subset they could run. Two years from ~2% to ~70%.
 
-The big insight: accuracy scales with test-time compute. Give o1 more time to think and it gets better. [The relationship is roughly log-linear](https://vibeengines.com/paper/o1-system-card): every time you double the compute, accuracy goes up by a fixed amount. A new scaling law, but at inference time instead of training time.
+Jason Wei has been writing for a while that [evals are the objective function](https://www.jasonwei.net/blog/evals). Yao's [second-half essay](https://ysymyth.github.io/The-Second-Half/) points at the saturation chart: old tests get crushed, then we invent a harder exam, then that gets crushed too. I'm not going to redraw someone else's figure. The story is enough. Most of the quizzes from the first half are no longer scarce.
 
-o1 ranked in the 89th percentile on Codeforces (competitive programming) and solved 83% of problems on the AIME math qualifier (vs. 13% for GPT-4o). Same loop: input a problem, output a solution, compare. Different axis: you scaled compute at inference, not training.
+## So score the state, not the essay
 
-## Two years from 2% to 70%
+[τ-bench](https://arxiv.org/abs/2406.12045) (Yao, Shinn, Razavi, Narasimhan; Sierra) is what the second half looks like when you take it seriously. Messy human-facing work. An LLM user, a policy doc, APIs that read and write a database. You don't grade the conversation. You compare the final database to the annotated goal.
 
-In February 2025, Anthropic released [Claude 3.7 Sonnet](https://www.anthropic.com/news/claude-3-7-sonnet) and reported 70.3% on SWE-bench Verified, a cleaner 500-task subset of SWE-bench. Two years earlier, Claude 2 solved ~2% of issues. Now: 70%.
+From the paper's own user instruction:
 
-To be clear, the 70.3% number uses a high-compute setup: parallel sampling, rejection sampling against visible tests, and a ranking model to pick the best solution. Without that scaffold, Claude 3.7 Sonnet gets 63.7%. Still massive. Still real.
+> You are mia_li_3668. You want to fly from New York to Seattle on May 20 (one way). You do not want to fly before 11am est. You want to fly in economy. You prefer direct flights but one stopover also fine. If there are multiple options, you prefer the one with the lowest price. You have 3 baggages. You do not want insurance. You want to use your two certificates to pay. If only one certificate can be used, you prefer using the larger one, and pay the rest with your 7447 card.
 
-This is the trajectory. From 2% to 70% in two years. Models got better. Harnesses got smarter. Test-time compute became a thing. Progress compounded.
+Input: a user who will argue with you, plus tools, plus a policy. Output: a trajectory of API calls. Compare: is the reservation in the DB what it should be?
 
-[Jason Wei's chart](https://www.jasonwei.net/blog/common-arguments-regarding-emergent-abilities) on AI benchmark saturation showed this pattern across dozens of tests: as models scaled, old benchmarks saturated. Tasks that looked impossible in 2020 became trivial by 2024. SWE-bench held longer because it was harder, but even it is cracking.
+GPT-4o still landed under 50% average success across retail and airline, and `pass^8` under 25% in retail. Capability is not reliability. The model can talk. The database is what you ship.
 
-## Halftime
+## Still write the stupid eval
 
-Most old tests are solved or close to it. MMLU used to be the standard. Now it's a checkbox. The scarce thing isn't compute or data anymore. It's defining the right problem. What should we measure?
+I still believe [stupid evals](/blog/write-stupid-evals) and [error bars](/blog/report-error-bars). Start with an `assert`. Show the work. Don't overthink the framework.
 
-[τ-bench](https://arxiv.org/abs/2406.12045) (Yao et al., 2024, Sierra) is one answer. Instead of a single-turn quiz, τ-bench simulates a customer service conversation. An agent talks to a user (simulated by another LLM), uses APIs to read and write a database, and follows a policy document. Success isn't judged by the conversation transcript. It's judged by the final database state.
+I don't believe MMLU tells you if the agent you shipped can do the job. That test measures whether a function returns the right letter. Your product is a trajectory through tools and state.
 
-Here's a task from the [airline domain](https://github.com/sierra-research/tau-bench):
-
-> You are `mia_li_2017`, and you want to change your most recent flight to fly to SF instead of LA on the same day. If the change is not possible, you want the agent to cancel and rebook.
-
-The agent has to:
-1. Look up the booking
-2. Check if the flight change is available
-3. Follow the policy (maybe there's a fee, maybe it's not allowed)
-4. Update the database or cancel and rebook
-5. Confirm with the user
-
-At the end, τ-bench compares the database state to the expected outcome. Did the agent do the right thing? Not "did it say the right words," but "did the right thing happen."
-
-Even GPT-4o, the best model at the time, succeeded on less than 50% of tasks. The pass^k metric (did it solve the task on all k independent trials) was even worse: under 25% in the retail domain. Reliability, not just capability.
-
-This is the shift. We're not measuring whether a model can answer a question anymore. We're measuring whether an agent can complete a messy, multi-turn, human-facing task and leave the world in the right state.
-
-## The loop stayed the same
-
-I still believe in [stupid evals](/blog/write-stupid-evals) and [error bars](/blog/report-error-bars). Start simple. Measure what matters. Report uncertainty.
-
-But I don't believe MMLU tells you if your agent can do the job. That test measures world knowledge. Agents need to navigate state, follow rules, recover from mistakes, and act reliably over many turns. Different ball.
-
-The people closest to the product should write the next benchmark. If you're building a coding agent, write evals that test what real users need: can it refactor a module without breaking tests? Can it debug a flaky integration? If you're building a customer service agent, test the database state, not the prose.
-
-The loop never changed: input, output, compare. But the ball changed. Evaluating agents is not evaluating models. We're at halftime. The scarce thing now is defining the right problem.
-
-The 2025 post on [building reliable LLM applications](/blog/building-reliable-llm-applications) stays up. This is the 2026 update.
+The people closest to the product should write the next benchmark. If you are on the coding agent, write the issue that your users actually file. If you are on support, score the database, not the tone. The 2025 post stays up. The function never got more magical. We just started throwing bigger things at it.
