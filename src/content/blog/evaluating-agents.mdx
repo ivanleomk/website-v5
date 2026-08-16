@@ -5,17 +5,23 @@ export const frontmatter = {
   description: "Evaluating agents is not evaluating models. The function stayed the same. The hard part is now picking the right problem.",
 }
 
-I gave a talk at [Digital Jungle](http://luma.com/qdl9mr2e?tk=P3UvLA) in early 2026. Not to pitch something new, just to map the last few years of evals. I'd spent late 2025 building [Manus](https://manus.im), an agent that ran multiple turns and edited real code. Before that I wrote [Building Reliable LLM Applications](/blog/building-reliable-llm-applications): RAG, structured outputs, single-turn stuff. That post still holds. It's August 2026 now. This is a quick thought about how things have changed.
+The hardest problem now is finding the right problem for models to solve.
 
-The difficult challenge has now shifted to finding the right problem for LLM evals. We used to struggle to get a model to pick the right letter on a quiz. Now the models crush those quizzes, and the work is deciding what "pass" even means when the thing you're measuring can run for forty turns, call tools, and leave a database in the wrong state.
+It's August 2026. I spent late 2025 building [Manus](https://manus.im). Before that I wrote [Building Reliable LLM Applications](/blog/building-reliable-llm-applications). That post still holds. This is a quick thought about how the instrument changed.
 
-We still treat the LLM as a function. You throw something in, you get something out, you compare. What changed is the scope of what we can throw at that function, and how the model itself is trained. Evaluating a model (question in, letter out) is not evaluating an agent (trajectory, tools, environment state).
+Broadly speaking, agents still work like functions. We throw in some input, we get an output, and we compare it against a ground truth or a rubric. That loop didn't change. Evaluating a model (question in, letter out) is still not evaluating an agent (trajectory, tools, environment state). The scope of what we throw at the function did.
+
+I said this at an [Artificial Analysis talk](http://luma.com/qdl9mr2e?tk=P3UvLA) earlier this year. Most models crush easy benchmarks over time as we scale data and parameter count. They don't need to specialise in the test. They train on more data, larger corpora, and other axes like test-time compute, and the quiz dies. Benchmarks have shorter life cycles than they used to.
+
+Even defining a pass has gotten messier. The rubric is harder. Detecting cheating is now part of the job: [Z.ai](https://huggingface.co/blog/zai-org/glm-52-blog) had to run a rule filter plus an LLM judge on tool calls during RL because the agent would `curl` the answer. You also have to stop the model from going to look up the key. In July 2026 an eval agent [broke into Hugging Face](https://huggingface.co/blog/agent-intrusion-technical-timeline) trying to steal test solutions rather than solve the task. And we probably don't know the capability ceiling on a given task, because [it's too expensive to measure](https://x.com/polynoamial/status/2064210146558136827), as Noam Brown put it.
+
+That's a long way from GPT-2, when the eval was [LAMBADA](https://aclanthology.org/P16-1144/): finish the last word of a sentence and sound convincing.
 
 [Shunyu Yao](https://ysymyth.github.io/The-Second-Half/) called this AI's halftime. First half: invent better training methods. Second half: define the right problem. I buy that.
 
 ## How we got here, quickly
 
-Training used to be next-word prediction. In 2019, [OpenAI trained GPT-2](https://openai.com/index/better-language-models/) "simply to predict the next word in 40GB of Internet text" and would not release the full weights. The evals matched that job: finish a sentence, pick a letter.
+Training used to match that LAMBADA job. In 2019, [OpenAI trained GPT-2](https://openai.com/index/better-language-models/) "simply to predict the next word in 40GB of Internet text" and would not release the full weights. Finish a sentence. Pick a letter.
 
 Then the recipe got bigger. Scale. Then [o1](https://openai.com/index/learning-to-reason-with-llms/) in September 2024: reasoning trained in with RL, not just prompted. OpenAI's point was that accuracy goes up if you spend more compute at test time, not only at train time. On the 2024 AIME, GPT-4o averaged 12% (1.8/15). o1 averaged 74% with one sample and 83% with consensus among 64 samples. Same function call. More thinking inside it.
 
