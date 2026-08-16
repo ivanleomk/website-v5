@@ -29,9 +29,10 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
 
   return (
     <nav
-      className="hidden lg:block fixed left-8 top-1/2 -translate-y-1/2 z-10"
+      className="hidden xl:block fixed top-1/2 -translate-y-1/2 z-10"
       aria-label="Table of contents"
       style={{
+        left: "max(2rem, calc((100vw - 800px) / 2 - 220px))",
         maxHeight: "calc(100vh - 12rem)",
       }}
     >
@@ -82,6 +83,7 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
                 }}
                 className={`
                   py-2 text-[13px] leading-tight no-underline transition-all duration-150
+                  whitespace-nowrap
                   opacity-0 group-hover:opacity-100
                   ${h.level === 3 ? "pl-3" : "pl-0"}
                   ${isActive 
