@@ -1,9 +1,37 @@
 import { notFound } from "next/navigation";
 import { blogPosts, getBlogPost } from "@/content/blog/registry";
 import TableOfContents from "./toc";
+import type { Metadata } from "next";
 
 export function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const post = getBlogPost(slug);
+
+  if (!post) {
+    return {
+      title: "Post Not Found | Ivan Leo",
+    };
+  }
+
+  const { frontmatter } = post;
+  const title = `${frontmatter.title ?? slug} | Ivan Leo`;
+  const description = frontmatter.description ?? "Personal blog";
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `https://ivanleo.com/blog/${slug}`,
+    },
+  };
 }
 
 function slugify(text: string) {
