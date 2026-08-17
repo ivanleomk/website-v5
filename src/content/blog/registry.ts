@@ -5,6 +5,7 @@ import type { ComponentType } from "react";
 import type { MDXComponents } from "mdx/types";
 import agenticSearchContent, { frontmatter as agenticSearchFrontmatter } from "./agentic-search.mdx";
 import buildingReliableLlmApplicationsContent, { frontmatter as buildingReliableLlmApplicationsFrontmatter } from "./building-reliable-llm-applications.mdx";
+import evaluatingAgentsContent, { frontmatter as evaluatingAgentsFrontmatter } from "./evaluating-agents.mdx";
 import grepBeatsSqliteFtsContent, { frontmatter as grepBeatsSqliteFtsFrontmatter } from "./grep-beats-sqlite-fts.mdx";
 import howDoesInstructorWorkContent, { frontmatter as howDoesInstructorWorkFrontmatter } from "./how-does-instructor-work.mdx";
 import migratingToReactInkContent, { frontmatter as migratingToReactInkFrontmatter } from "./migrating-to-react-ink.mdx";
@@ -176,6 +177,53 @@ export const blogPosts: BlogPost[] = [
         {
             "text": "Useful Links",
             "id": "useful-links",
+            "level": 2
+        }
+    ],
+  },
+  {
+    slug: "evaluating-agents",
+    frontmatter: evaluatingAgentsFrontmatter,
+    Content: evaluatingAgentsContent,
+    headings: [
+        {
+            "text": "Starting with Pre-Training",
+            "id": "starting-with-pre-training",
+            "level": 2
+        },
+        {
+            "text": "Scaling Up",
+            "id": "scaling-up",
+            "level": 2
+        },
+        {
+            "text": "Next word, then a letter",
+            "id": "next-word-then-a-letter",
+            "level": 2
+        },
+        {
+            "text": "Then we put the model in a repo",
+            "id": "then-we-put-the-model-in-a-repo",
+            "level": 2
+        },
+        {
+            "text": "The harness is a different instrument",
+            "id": "the-harness-is-a-different-instrument",
+            "level": 2
+        },
+        {
+            "text": "Two years later the old test is mostly solved",
+            "id": "two-years-later-the-old-test-is-mostly-solved",
+            "level": 2
+        },
+        {
+            "text": "So score the state, not the essay",
+            "id": "so-score-the-state-not-the-essay",
+            "level": 2
+        },
+        {
+            "text": "Still write the stupid eval",
+            "id": "still-write-the-stupid-eval",
             "level": 2
         }
     ],

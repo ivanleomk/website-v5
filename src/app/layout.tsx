@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Newsreader } from "next/font/google";
+import { Geist_Mono, Newsreader } from "next/font/google";
 import Link from "next/link";
 import Script from "next/script";
 import "highlight.js/styles/github-dark.css";
@@ -7,6 +7,11 @@ import "./globals.css";
 
 const newsreader = Newsreader({
   variable: "--font-serif",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
@@ -21,7 +26,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${newsreader.variable} antialiased`}>
+    <html
+      lang="en"
+      className={`${newsreader.variable} ${geistMono.variable} antialiased`}
+    >
       <body className="min-h-screen bg-white text-[#282828] flex flex-col">
         {/* Global Minimal Navigation */}
         <header className="max-w-[800px] w-full mx-auto px-6 pt-10 pb-4 flex justify-between items-baseline">

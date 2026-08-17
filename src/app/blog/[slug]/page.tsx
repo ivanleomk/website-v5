@@ -2,6 +2,10 @@ import { notFound } from "next/navigation";
 import { blogPosts, getBlogPost } from "@/content/blog/registry";
 import TableOfContents from "./toc";
 import NewsletterSignup from "@/components/newsletter-signup";
+import CompletionSample from "@/components/completion-sample";
+import ReasoningSample from "@/components/reasoning-sample";
+import RubricSample from "@/components/rubric-sample";
+import PatchSample from "@/components/patch-sample";
 import type { Metadata } from "next";
 
 export function generateStaticParams() {
@@ -44,6 +48,10 @@ function slugify(text: string) {
 
 // Custom heading components that add id attributes for TOC linking
 const mdxComponents = {
+  CompletionSample,
+  ReasoningSample,
+  RubricSample,
+  PatchSample,
   h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => {
     const text =
       typeof props.children === "string"

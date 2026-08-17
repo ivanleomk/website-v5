@@ -2,8 +2,8 @@ export const frontmatter = {
   title: "Evaluating agents is not evaluating models",
   date: "2026-08-16",
   author: "Ivan Leo",
-  description: "Evaluating agents is not evaluating models. The function stayed the same. The hard part is now picking the right problem.",
-}
+  description: "What else is left to benchmark?",
+};
 
 The hardest problem now is finding the right problem for models to solve.
 
@@ -17,65 +17,169 @@ Even defining a pass has gotten messier. The rubric is harder. Detecting cheatin
 
 That's a long way from GPT-2, when the eval was [LAMBADA](https://aclanthology.org/P16-1144/): finish the last word of a sentence and sound convincing.
 
-[Shunyu Yao](https://ysymyth.github.io/The-Second-Half/) called this AI's halftime. First half: invent better training methods. Second half: define the right problem. I buy that.
+Rubrics also have become incredibly complicated, with [Cognition's new FrontierCode benchmark](https://cognition.com/frontiercode) being a great example of this.
 
-## How we got here, quickly
+They had to hire 20+ world-class developers to build realistic, diverse and challenging tasks, spending more than 40 hours per tasks to define a shared rubric over many rounds of reviews. And even when a benchmark still works, a pass is no longer just "did the tests go green." **You also have to catch cheating**.
 
-Training used to match that LAMBADA job. In 2019, [OpenAI trained GPT-2](https://openai.com/index/better-language-models/) "simply to predict the next word in 40GB of Internet text" and would not release the full weights. Finish a sentence. Pick a letter.
+[Z.ai](https://huggingface.co/blog/zai-org/glm-52-blog) had to run a rule filter plus an LLM judge on tool calls during RL, because the agent would just download the answer. In July 2026, an eval agent [broke into Hugging Face](https://huggingface.co/blog/agent-intrusion-technical-timeline) trying to steal the solutions instead of solving the task. In the post-mortem, the wild part was the agents talking to each other: they [turned a shared Artifactory into a message board, then kept going via directory names](https://www.youtube.com/watch?v=87DyyMV0kCY) after the first channel got shut down.
 
-Then the recipe got bigger. Scale. Then [o1](https://openai.com/index/learning-to-reason-with-llms/) in September 2024: reasoning trained in with RL, not just prompted. OpenAI's point was that accuracy goes up if you spend more compute at test time, not only at train time. On the 2024 AIME, GPT-4o averaged 12% (1.8/15). o1 averaged 74% with one sample and 83% with consensus among 64 samples. Same function call. More thinking inside it.
+We also saw this for publicly cited benchmarks like SWE-Bench Pro with Cursor finding that [63% of successful Opus 4.8 Max resolutions retrieved the fix rather than derived it](https://cursor.com/blog/reward-hacking-coding-benchmarks).
 
-Evals followed the same curve. LAMBADA and MMLU asked for a word or a letter. SWE-bench asked for a patch in a real repo. Devin showed that wrapping the model in a harness (shell, editor, retry) is a different measurement than a single completion. Claude 3.7 Sonnet plus Claude Code later reported 70.3% on SWE-bench Verified. Then τ-bench stopped scoring the prose and started scoring the database.
+Compare that to [evals in 2025](/blog/building-reliable-llm-applications), when we were still in RAG-land and a model that stayed coherent across a few tool calls between user turns felt like a lot.
 
-```
-LAMBADA / MMLU     next word or a letter
-SWE-bench          issue in, patch out, tests compare
-Devin (Mar 2024)   same dataset, now a tool loop
-o1 (Sep 2024)      train the thinking, not just the next token
-70% on Verified    then tau-bench scores the database
-```
+The hard problem has shifted to finding the right problem. We used to struggle to get a model to pick the right letter on a quiz. Now the models crush those quizzes, and with the wrong sandbox they might walk out with the answer key.
 
-That's the whole map. Same `f(x) -> y`. The `x` got a lot larger.
+[Shunyu Yao](https://ysymyth.github.io/The-Second-Half/) called this AI's halftime.
 
-## Next word, then a letter
+1. **First Half**: invent better training methods.
+2. **Second half**: define the right problem.
 
-[LAMBADA](https://aclanthology.org/P16-1144/) (Paperno et al., ACL 2016) is a next-word test where the last word is easy if you read the whole passage and impossible if you only see the last sentence. From Figure 1 of the paper:
+I could get behind that. But let's take a quick walk down memory lane to see just how fast things have changed.
 
-> "Yes, I thought I was going to lose the baby." "I was scared too," he stated, sincerity flooding his eyes. "You were?" "Yes, of course. Why do you even ask?" "This baby wasn't exactly planned for."
->
-> **Target word:** miscarriage
+## Starting with Pre-Training
 
-Input: passage. Output: one word. Compare: exact match. Models in 2016 were under 1%. Humans got it.
+Training used to be next-word prediction. In 2019, [OpenAI trained GPT-2](https://openai.com/index/better-language-models/) based off predicting the next word in 40GB of internet text.
 
-[MMLU](https://arxiv.org/abs/2009.03300) (Hendrycks et al., 2020) is the quiz version. 57 subjects, four options, one letter. Hugging Face's official example from the anatomy split:
+<CompletionSample
+  source="GPT-2"
+  prompt="In a shocking finding, scientist discovered a herd of unicorns living in a remote, previously unexplored valley, in the Andes Mountains. Even more surprising to the researchers was the fact that the unicorns spoke perfect English."
+  completion="The scientist named the population, after their distinctive horn, Ovid’s Unicorn. These four-horned, silver-white unicorns were previously unknown to science."
+/>
 
-> **Question:** What is the embryological origin of the hyoid bone?
->
-> **A.** The first pharyngeal arch
->
-> **B.** The first and second pharyngeal arches
->
-> **C.** The second pharyngeal arch
->
-> **D.** The second and third pharyngeal arches
->
-> **Answer:** D
+These models could replicate human text well and the evals cited then were simple ones like [LAMBADA](https://arxiv.org/abs/1606.06031) where the model only needed to output the final word in a sentence given some prior context as you'll see below.
 
-Input: question. Output: `A`/`B`/`C`/`D`. Compare: did you pick D? When the paper came out, GPT-3 175B hit 43.9%. Random is 25%. The authors estimated expert humans around 89.8%. That used to be hard.
+<CompletionSample
+  source="LAMBADA"
+  loop={false}
+  prompt={`"Yes, I thought I was going to lose the baby." "I was scared too," he stated, sincerity flooding his eyes. "You were?" "Yes, of course. Why do you even ask?" "This baby wasn't exactly planned for." "Do you honestly think that I would want you to have a `}
+  completion="miscarriage"
+/>
 
-A single-shot MMLU item is one forward pass and a letter. An o1-style eval on the same item is still a letter, but the model is allowed (and trained) to spend a long private chain of thought first. You are still scoring the letter. You are not scoring a trajectory.
+<CompletionSample
+  loop={false}
+  prompt="They tuned, discussed for a moment, then struck up a lively jig. Everyone joined in, turning the courtyard into an even more chaotic scene, people now dancing in circles, swinging and spinning in circles, everyone making up their own dance steps. I felt my feet tapping, my body wanting to move. Aside from writing, I've always loved"
+  completion="dancing"
+/>
 
-## Then we put the model in a repo
+<CompletionSample
+  loop={false}
+  prompt="Both its sun-speckled shade and the cool grass beneath were a welcome respite after the stifling kitchen, and I was glad to relax against the tree's rough, brittle bark and begin my breakfast of buttery, toasted bread and fresh fruit. Even the water was tasty, it was so clean and cold. It almost made up for the lack of"
+  completion="coffee"
+/>
 
-[SWE-bench](https://www.swebench.com/) (Jimenez et al., ICLR 2024) keeps the function, changes the scope. Input is a GitHub issue. Output is a patch. Compare is: do the tests pass?
+This seems almost trivial for the models today.
 
-A real item from the benchmark is `django__django-10097` ([SWE-bench](https://github.com/princeton-nlp/SWE-bench), [PR](https://github.com/django/django/pull/10097)):
+By the time we had reached GPT-3 in 2020, we had a training budget of 300 billion tokens and a model that scored 86.4% on LAMBADA. **This was no longer the right evaluation to hill climb on**.
 
-> **Issue:** Make `URLValidator` reject invalid characters in the username and password
->
-> URLs with un-escaped `/`, `@` or `:` characters in the username or password fields should be rejected.
+The next test that still had headroom was [GSM8K](https://arxiv.org/pdf/2110.14168) where models were tasked to solve grade school math problems.
 
-You are not guessing a word. You are finding the right file in Django, writing a fix, and surviving the test suite.
+<CompletionSample
+  loop={true}
+  source="GSM8K"
+  prompt="Janet's ducks lay 16 eggs per day. She eats three for breakfast every morning and bakes muffins for her friends every day with four. She sells the remainder at the farmers' market daily for $2 per fresh duck egg. How much in dollars does she make every day at the farmers' market?"
+  completion="Janet sells 16 - 3 - 4 = 9 duck eggs a day. She makes 9 × 2 = 18 dollars every day at the farmers' market. #### 18"
+/>
+
+In 2022, Jason Wei showed that using few-shot examples in the prompt with chain-of-thought could boost performance significantly, taking PaLM 540B from 17.9% to 56.9%.
+
+I found something similar when [benchmarking structured outputs on GSM8k](https://python.useinstructor.com/blog/2024/09/26/bad-schemas-could-break-your-llm-structured-outputs/) in 2024, showing that adding a `reasoning` field in the response object increased model accuracy by 60% on the GSM8k dataset.
+
+When these quizzes started saturating, The [Google-Proof Q&A Benchmark](https://arxiv.org/abs/2311.12022), more commonly known as GPQA, became a candidate for an unsaturated evaluation that we could hill-climb on. At the time, the strongest GPT-4-based baseline was only 39%.
+
+## Scaling Up
+
+If a scratchpad in the prompt moves GSM8k, why not just bake it in?
+
+It started with OpenAI announcing that they trained a new series to spend more time thinking before it responds. And as a result, we get [o1-preview](https://openai.com/index/introducing-openai-o1-preview/) that drops on 12 September 2024.
+
+<ReasoningSample
+  source="o1-preview"
+  problem="A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How much does the ball cost?"
+  thoughts={[
+    "Ten cents is the obvious answer.",
+    "If the ball is $0.10, the bat is $1.10, and they add to $1.20.",
+    "That's too much.",
+    "Let the ball cost b. Then the bat costs b + 1, so 2b + 1 = 1.10.",
+    "b = 0.05.",
+  ]}
+  answer="$0.05"
+/>
+
+On GPQA Diamond, GPT-4o was 50.6% pass@1. o1-preview was 73.3%, past the PhD line OpenAI recruited for that eval. Same loop. New method. The test still had room, so the jump printed.
+
+Then just a few months later, we see [Deepseek-R1](https://arxiv.org/abs/2501.12948) on 20 January 2025 which matched the performance of O1 with open weights and pure GRPO at scale. GRPO had been introduced earlier by [DeepSeek Math](https://arxiv.org/pdf/2402.03300) which had used it to match GPT-4 on the MATH eval.
+
+R1 provided open weights and a code-baed reward which allowed it to drive scores on evals like AIME from 15.6% to 71%.
+
+<RubricSample
+  source="DeepSeek-R1"
+  problem="If a > 1, then the sum of the real solutions of √(a − √(a + x)) = x is equal to"
+  thoughts={[
+    "To solve √(a − √(a + x)) = x, start by squaring both sides.",
+    "a − √(a + x) = x². Isolate the inner root: √(a + x) = a − x².",
+    "Square again: (a − x²)² = a + x, which blows up into a quartic.",
+    "Wait, wait. Wait. That's an aha moment I can flag here.",
+    "Don't expand. Set y = √(a + x). Then y − x = 1, so √(a + x) = x + 1.",
+    "Then x = (−1 + √(4a − 3)) / 2. Only one real solution, so the sum is the same.",
+  ]}
+  answer="(√(4a − 3) − 1) / 2"
+  rubric={[
+    { label: "Final answer is a closed form in a" },
+    { label: "Extracted answer equals (√(4a − 3) − 1) / 2" },
+    { label: "Answer is reported in a boxed, checkable form" },
+  ]}
+/>
+
+So we were seeing that with the right eval to hill climb on, we developed models which were able to expend more compute at est time to get better results. Test-time scaling had been developed.
+
+## Agents
+
+At the same time we were measuring knowledge and reasoning, we were also seeing evals that measured the ability of models to work autonomously. This led to the creation of [SWE-Bench](https://www.swebench.com/) in 2023.
+
+At launch, Claude 2 resolved [1.96% of issues](https://arxiv.org/abs/2310.06770) with BM25 retrieval, and 4.8% if you handed it the right files. That is the "model in a repo" number. Bare completion, no agent loop.
+
+A real item from the benchmark is `django__django-10097` ([SWE-bench](https://github.com/princeton-nlp/SWE-bench), [PR](https://github.com/django/django/pull/10097)). You are not guessing a word.
+
+You are finding the right file in Django, writing a fix, and surviving two test sets: **fail-to-pass** (the bug is gone) and **pass-to-pass** (nothing else broke).
+
+<PatchSample
+  source="SWE-bench · django__django-10097"
+  issueTitle="#29528 — Make URLValidator reject invalid characters in the username and password"
+  issue="Since #20003, URLValidator accepts usernames and passwords. RFC 1738 §3.1 requires that :, @, or / in those fields be %-encoded; they are currently accepted raw. That lets invalid URLs through — for example http://foo/bar@example.com. Appending ?m=foo@example.com would also make many cases in invalid_urls.txt pass."
+  actions={[
+    {
+      thought: "The ticket is about userinfo. I should find where URLValidator builds the user:pass group.",
+      action: "read django/core/validators.py",
+    },
+    {
+      thought: "There it is — \\S for user:pass. RFC 1738 says :, @, and / have to be encoded, so the class should exclude them.",
+      action: "edit django/core/validators.py",
+    },
+    {
+      thought: "The userinfo group is tighter now. Run the validator tests and see if the new invalid URLs fail correctly.",
+      action: "run tests/validators",
+    },
+  ]}
+  file="django/core/validators.py"
+  patch={`@@ -94,7 +94,7 @@ class URLValidator(RegexValidator):
+
+        regex = _lazy_re_compile(
+            r'^(?:[a-z0-9\\.\\-\\+]*)://'  # scheme is validated separately
+
+-            r'(?:\\S+(?::\\S*)?@)?'  # user:pass authentication
+
+*            r'(?:[^\\s:@/]+(?::[^\\s:@/]*)?@)?'  # user:pass authentication
+              r'(?:' + ipv4_re + '|' + ipv6_re + '|' + host_re + ')'
+              r'(?::\\d{2,5})?'  # port`}
+  failToPass={[
+  "tests/validators/tests.py::test_invalid_urls[http://foo/bar@example.com]",
+  "tests/validators/tests.py::test_invalid_urls[http://foo:bar:baz@example.com]",
+  ]}
+  passToPass={[
+  "tests/validators/tests.py::test_valid_urls[https://example.com]",
+  "tests/validators/tests.py::test_valid_urls[http://user:pass@host]",
+  ]}
+  />
 
 At launch, Claude 2 resolved [1.96% of issues](https://arxiv.org/abs/2310.06770) with BM25 retrieval, and 4.8% if you handed it the right files. That is the "model in a repo" number. Bare completion, no agent loop.
 
