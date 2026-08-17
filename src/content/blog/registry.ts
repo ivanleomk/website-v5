@@ -197,33 +197,13 @@ export const blogPosts: BlogPost[] = [
             "level": 2
         },
         {
-            "text": "Next word, then a letter",
-            "id": "next-word-then-a-letter",
+            "text": "Agents",
+            "id": "agents",
             "level": 2
         },
         {
-            "text": "Then we put the model in a repo",
-            "id": "then-we-put-the-model-in-a-repo",
-            "level": 2
-        },
-        {
-            "text": "The harness is a different instrument",
-            "id": "the-harness-is-a-different-instrument",
-            "level": 2
-        },
-        {
-            "text": "Two years later the old test is mostly solved",
-            "id": "two-years-later-the-old-test-is-mostly-solved",
-            "level": 2
-        },
-        {
-            "text": "So score the state, not the essay",
-            "id": "so-score-the-state-not-the-essay",
-            "level": 2
-        },
-        {
-            "text": "Still write the stupid eval",
-            "id": "still-write-the-stupid-eval",
+            "text": "Multi-Turn Evals",
+            "id": "multi-turn-evals",
             "level": 2
         }
     ],

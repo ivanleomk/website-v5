@@ -119,3 +119,33 @@ article h3 {
   }
 }
 
+.prose .katex {
+  font-size: 1em;
+  font-family: inherit;
+  color: inherit;
+  vertical-align: -0.04em;
+}
+
+.prose .katex .katex-html,
+.prose .katex .mord,
+.prose .katex .mathrm,
+.prose .katex .mathit,
+.prose .katex .mathnormal {
+  font-family: var(--font-serif), "Times New Roman", Times, serif;
+}
+
+.prose .katex .mathnormal,
+.prose .katex .mathit {
+  font-style: italic;
+}
+
+.prose .katex .mathrm {
+  font-style: normal;
+}
+
+.prose .katex-display {
+  margin: 1.1em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+

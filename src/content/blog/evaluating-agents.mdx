@@ -130,17 +130,15 @@ R1 provided open weights and a code-baed reward which allowed it to drive scores
   ]}
 />
 
-So we were seeing that with the right eval to hill climb on, we developed models which were able to expend more compute at est time to get better results. Test-time scaling had been developed.
+So we were seeing that with the right eval to hill climb on, we developed models which were able to expend more compute at test time to get better results. Test-time scaling had been developed.
 
 ## Agents
 
 At the same time we were measuring knowledge and reasoning, we were also seeing evals that measured the ability of models to work autonomously. This led to the creation of [SWE-Bench](https://www.swebench.com/) in 2023.
 
-At launch, Claude 2 resolved [1.96% of issues](https://arxiv.org/abs/2310.06770) with BM25 retrieval, and 4.8% if you handed it the right files. That is the "model in a repo" number. Bare completion, no agent loop.
+At launch, Claude 2 resolved [1.96% of issues](https://arxiv.org/abs/2310.06770) with BM25 retrieval, and 4.8% if you handed it the right files. That is the "model in a repo" number. Bare completion, no agent loop. **Note that this was a single turn and the model had to output a patch**.
 
-A real item from the benchmark is `django__django-10097` ([SWE-bench](https://github.com/princeton-nlp/SWE-bench), [PR](https://github.com/django/django/pull/10097)). You are not guessing a word.
-
-You are finding the right file in Django, writing a fix, and surviving two test sets: **fail-to-pass** (the bug is gone) and **pass-to-pass** (nothing else broke).
+A real item from the benchmark is `django__django-10097` ([SWE-bench](https://github.com/princeton-nlp/SWE-bench), [PR](https://github.com/django/django/pull/10097)). You are not guessing a word. You are finding the right file in Django, writing a fix, and surviving two test sets: **fail-to-pass** (the bug is gone) and **pass-to-pass** (nothing else broke).
 
 <PatchSample
   source="SWE-bench · django__django-10097"
@@ -171,6 +169,7 @@ You are finding the right file in Django, writing a fix, and surviving two test 
 *            r'(?:[^\\s:@/]+(?::[^\\s:@/]*)?@)?'  # user:pass authentication
               r'(?:' + ipv4_re + '|' + ipv6_re + '|' + host_re + ')'
               r'(?::\\d{2,5})?'  # port`}
+
   failToPass={[
   "tests/validators/tests.py::test_invalid_urls[http://foo/bar@example.com]",
   "tests/validators/tests.py::test_invalid_urls[http://foo:bar:baz@example.com]",
@@ -181,48 +180,67 @@ You are finding the right file in Django, writing a fix, and surviving two test 
   ]}
   />
 
-At launch, Claude 2 resolved [1.96% of issues](https://arxiv.org/abs/2310.06770) with BM25 retrieval, and 4.8% if you handed it the right files. That is the "model in a repo" number. Bare completion, no agent loop.
+In March 2024, [Cognition announced Devin](https://x.com/cognition/status/1767548763134964000?lang=en), demonstrating an autonomous loop that scored 13.86% on SWE-bench. Just weeks later in April 2024, [the Princeton team released SWE-agent](https://arxiv.org/pdf/2405.15793), showing how an Agent-Computer Interface (ACI) harness could take the open-source baseline from 1.31% to 12.47% with GPT-4o by letting models iteratively browse, edit, and run repo tests
 
-## The harness is a different instrument
+By March 25 2025, [Gemini 2.5 Pro](https://blog.google/innovation-and-ai/models-and-research/google-deepmind/gemini-model-thinking-updates-march-2025/) had launched with a score of 63.8% on SWE-Bench Verified. The benchmark was slowly being saturated with [OpenAI pronouncing it dead in February 2026](https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/).
 
-In March 2024, [Cognition's Devin](https://cognition.com/blog/swe-bench-technical-report) resolved 13.86% on a random 25% slice of SWE-bench (79 of 570). Not because someone trained a totally new base model overnight. Because the model could run commands, edit files, read the output, and try again.
+## Multi-Turn Evals
 
-A harness run is not a benchmark item. It looks more like this:
+SWE-Bench still hands the agent the whole ticket up front. The next step was a user who talks back.
 
-```
-issue
-  -> model picks a tool (bash / edit / read)
-  -> environment returns stdout or a diff
-  -> model tries again
-  -> ...
-  -> patch
-  -> tests
-```
+[τ-bench](https://arxiv.org/abs/2406.12045) is a great example of an evaluation which uses another Language Model posing as a user with a goal in mind.
 
-You still compare with tests. But the thing you ran is a loop, not a completion. Cognition's own writeup is the point: the previous best unassisted baseline was 1.96%. Changing the scaffold moved the number to ~14%. That is a new measurement, even if the dataset is the same.
+The agent being evaluated then needs to interact and resolve the user's query, before being graded on the final result based on a given rubric.
 
-## Two years later the old test is mostly solved
-
-In February 2025, Anthropic reported [Claude 3.7 Sonnet](https://www.anthropic.com/news/claude-3-7-sonnet) at 70.3% on SWE-bench Verified with a high-compute scaffold (parallel samples, reject patches that break visible tests, rank the rest). Without that extra scaffold, 63.7% on the same 489-task subset they could run. Two years from ~2% to ~70%.
-
-Jason Wei has been writing for a while that [evals are the objective function](https://www.jasonwei.net/blog/evals). Yao's [second-half essay](https://ysymyth.github.io/The-Second-Half/) points at the saturation chart: old tests get crushed, then we invent a harder exam, then that gets crushed too. I'm not going to redraw someone else's figure. The story is enough. Most of the quizzes from the first half are no longer scarce.
-
-## So score the state, not the essay
-
-[τ-bench](https://arxiv.org/abs/2406.12045) (Yao, Shinn, Razavi, Narasimhan; Sierra) is what the second half looks like when you take it seriously. Messy human-facing work. An LLM user, a policy doc, APIs that read and write a database. You don't grade the conversation. You compare the final database to the annotated goal.
-
-From the paper's own user instruction:
+Here's an example from the paper of a sample user that the agent was tasked to interact with.
 
 > You are mia_li_3668. You want to fly from New York to Seattle on May 20 (one way). You do not want to fly before 11am est. You want to fly in economy. You prefer direct flights but one stopover also fine. If there are multiple options, you prefer the one with the lowest price. You have 3 baggages. You do not want insurance. You want to use your two certificates to pay. If only one certificate can be used, you prefer using the larger one, and pay the rest with your 7447 card.
 
-Input: a user who will argue with you, plus tools, plus a policy. Output: a trajectory of API calls. Compare: is the reservation in the DB what it should be?
+Here's what it looks like visualised as a multi-turn interaction between the user and the agent being evaluated (shown in blue).
 
-GPT-4o still landed under 50% average success across retail and airline, and `pass^8` under 25% in retail. Capability is not reliability. The model can talk. The database is what you ship.
+<TauSample source="τ-bench · airline · mia_li_3668" />
 
-## Still write the stupid eval
+Even today, on their standard Banking leaderboard, Claude Opus 5 scores a measly 48.7%. Another one that I liked was [TERMS-Bench](https://terms-bench.github.io/) which aims to get a model to act as a negotiator.
 
-I still believe [stupid evals](/blog/write-stupid-evals) and [error bars](/blog/report-error-bars). Start with an `assert`. Show the work. Don't overthink the framework.
+It uses a determinstic script to simulate a counterpart as seen in the pseudocode below.
 
-I don't believe MMLU tells you if the agent you shipped can do the job. That test measures whether a function returns the right letter. Your product is a trajectory through tools and state.
+```python
+import random
 
-The people closest to the product should write the next benchmark. If you are on the coding agent, write the issue that your users actually file. If you are on support, score the database, not the tone. The 2025 post stays up. The function never got more magical. We just started throwing bigger things at it.
+def seller_move(bid, ask, r, kappa, rng):
+    if bid >= r and rng.random() < kappa:
+        return "accept", bid
+
+    ask = ask - rng.uniform(0.15, 0.35) * (ask - r)
+    return "offer", max(ask, r)
+
+rng = random.Random(7)
+ask, r, kappa = 78.78, 59.48, 0.56
+
+for bid in [50.0, 55.0, 58.0, 61.0]:
+    action, ask = seller_move(bid, ask, r, kappa, rng)
+    print(action, round(ask, 2))
+    # "I can come down to {ask}." — a template, not a model
+```
+
+This lets us put a model on one side of a negotiation without putting another model on the other. Below, Gemma 4 31B is the buyer. The scripted seller will not go below $59.48$. Gemma will not pay above $99.13$. That interval is the ZOPA.
+
+Gemma accepts at $60.21$ — just above the seller's floor — and keeps almost the entire gap. That is a good deal for the buyer, not a missed exploration of the zone.
+
+<TermsSample source="TERMS-Bench · Gemma 4 31B · Overlap / Expressive" />
+
+Other similar benchmarks here would be [Zapier's Automation Bench](https://zapier.com/benchmarks) which measures the ability for models to perform end to end workflows across different business functions.
+
+## Conclusion
+
+If anything there's a clear pattern for these breakthroughs. We get a new eval, we find a method that climbs it.
+
+LAMBADA resulting in us scaling up pre-training. Evals like GPQA and GSM8k eventually resulted in techniques like Chain of Thoughts and test-time compute showing up. SWE-bench motivated the invention of the harness
+
+Models today already know the capital of France. The question is whether the model can do the work on a simulated set of tasks that you actually care about.
+
+An evaluation is how you decide what good means for you, and which model is best for that. Vibes will get you a demo. They will not let you iterate when the weights change next week.
+
+You don't need to invent the next SWE Bench today, just start by writing some [stupid evals](/blog/write-stupid-evals) and progressively making things more complicated.
+
+We've now reached the point where models require domain experts to determine if they've done a good job. That's why companies like Harvey published [BigLaw Bench](https://www.harvey.ai/blog/introducing-biglaw-bench).

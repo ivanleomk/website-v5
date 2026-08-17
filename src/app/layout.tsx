@@ -3,11 +3,12 @@ import { Geist_Mono, Newsreader } from "next/font/google";
 import Link from "next/link";
 import Script from "next/script";
 import "highlight.js/styles/github-dark.css";
+import "katex/dist/katex.min.css";
 import "./globals.css";
 
 const newsreader = Newsreader({
   variable: "--font-serif",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
 });
 
 const geistMono = Geist_Mono({

@@ -6,6 +6,8 @@ import CompletionSample from "@/components/completion-sample";
 import ReasoningSample from "@/components/reasoning-sample";
 import RubricSample from "@/components/rubric-sample";
 import PatchSample from "@/components/patch-sample";
+import TauSample from "@/components/tau-sample";
+import TermsSample from "@/components/terms-sample";
 import type { Metadata } from "next";
 
 export function generateStaticParams() {
@@ -52,6 +54,8 @@ const mdxComponents = {
   ReasoningSample,
   RubricSample,
   PatchSample,
+  TauSample,
+  TermsSample,
   h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => {
     const text =
       typeof props.children === "string"
