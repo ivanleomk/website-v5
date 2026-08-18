@@ -233,14 +233,12 @@ Other similar benchmarks here would be [Zapier's Automation Bench](https://zapie
 
 ## Conclusion
 
-If anything there's a clear pattern for these breakthroughs. We get a new eval, we find a method that climbs it.
+If anything there's a clear pattern for these breakthroughs, it's that we need good evaluations more than ever to find the gaps in model capabilities.
 
-LAMBADA resulting in us scaling up pre-training. Evals like GPQA and GSM8k eventually resulted in techniques like Chain of Thoughts and test-time compute showing up. SWE-bench motivated the invention of the harness
+Evals like LAMBADA helped pave the way for scaling pre-training. When faced with GSM8k and GPQA, we came up with chain-of-thought and test-time compute. And hill-climbing SWE-Bench led to the creation of the agent harness.
 
 Models today already know the capital of France. The question is whether the model can do the work on a simulated set of tasks that you actually care about.
 
-An evaluation is how you decide what good means for you, and which model is best for that. Vibes will get you a demo. They will not let you iterate when the weights change next week.
+An evaluation is how you decide what good means for you, and which model works best for your use case. We've now reached the point where models require domain experts to determine if they've done a good job. That's why companies like Harvey published [BigLaw Bench](https://www.harvey.ai/blog/introducing-biglaw-bench).
 
-You don't need to invent the next SWE Bench today, just start by writing some [stupid evals](/blog/write-stupid-evals) and progressively making things more complicated.
-
-We've now reached the point where models require domain experts to determine if they've done a good job. That's why companies like Harvey published [BigLaw Bench](https://www.harvey.ai/blog/introducing-biglaw-bench).
+You don't need to invent the next SWE-bench today. Just start by writing some [simple evals](/blog/write-stupid-evals) and taking things from there.
