@@ -187,28 +187,43 @@ export const blogPosts: BlogPost[] = [
     Content: evaluatingAgentsContent,
     headings: [
         {
-            "text": "Starting with Pre-Training",
-            "id": "starting-with-pre-training",
+            "text": "What's hard about scoring",
+            "id": "whats-hard-about-scoring",
             "level": 2
         },
         {
-            "text": "Scaling Up",
-            "id": "scaling-up",
+            "text": "Completions",
+            "id": "completions",
             "level": 2
         },
         {
-            "text": "Agents",
-            "id": "agents",
+            "text": "Scratchpads",
+            "id": "scratchpads",
             "level": 2
         },
         {
-            "text": "Multi-Turn Evals",
-            "id": "multi-turn-evals",
+            "text": "Hidden traces",
+            "id": "hidden-traces",
             "level": 2
         },
         {
-            "text": "Conclusion",
-            "id": "conclusion",
+            "text": "One-shot patches",
+            "id": "one-shot-patches",
+            "level": 2
+        },
+        {
+            "text": "The loop",
+            "id": "the-loop",
+            "level": 2
+        },
+        {
+            "text": "The database",
+            "id": "the-database",
+            "level": 2
+        },
+        {
+            "text": "What you actually score",
+            "id": "what-you-actually-score",
             "level": 2
         }
     ],
