@@ -5,6 +5,7 @@ import type { ComponentType } from "react";
 import type { MDXComponents } from "mdx/types";
 import agenticSearchContent, { frontmatter as agenticSearchFrontmatter } from "./agentic-search.mdx";
 import buildingReliableLlmApplicationsContent, { frontmatter as buildingReliableLlmApplicationsFrontmatter } from "./building-reliable-llm-applications.mdx";
+import evaluatingAgentsContent, { frontmatter as evaluatingAgentsFrontmatter } from "./evaluating-agents.mdx";
 import grepBeatsSqliteFtsContent, { frontmatter as grepBeatsSqliteFtsFrontmatter } from "./grep-beats-sqlite-fts.mdx";
 import howDoesInstructorWorkContent, { frontmatter as howDoesInstructorWorkFrontmatter } from "./how-does-instructor-work.mdx";
 import migratingToReactInkContent, { frontmatter as migratingToReactInkFrontmatter } from "./migrating-to-react-ink.mdx";
@@ -176,6 +177,53 @@ export const blogPosts: BlogPost[] = [
         {
             "text": "Useful Links",
             "id": "useful-links",
+            "level": 2
+        }
+    ],
+  },
+  {
+    slug: "evaluating-agents",
+    frontmatter: evaluatingAgentsFrontmatter,
+    Content: evaluatingAgentsContent,
+    headings: [
+        {
+            "text": "What's hard about scoring",
+            "id": "whats-hard-about-scoring",
+            "level": 2
+        },
+        {
+            "text": "Completions",
+            "id": "completions",
+            "level": 2
+        },
+        {
+            "text": "Scratchpads",
+            "id": "scratchpads",
+            "level": 2
+        },
+        {
+            "text": "Hidden traces",
+            "id": "hidden-traces",
+            "level": 2
+        },
+        {
+            "text": "One-shot patches",
+            "id": "one-shot-patches",
+            "level": 2
+        },
+        {
+            "text": "The loop",
+            "id": "the-loop",
+            "level": 2
+        },
+        {
+            "text": "The database",
+            "id": "the-database",
+            "level": 2
+        },
+        {
+            "text": "What you actually score",
+            "id": "what-you-actually-score",
             "level": 2
         }
     ],

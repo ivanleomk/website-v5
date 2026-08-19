@@ -2,6 +2,12 @@ import { notFound } from "next/navigation";
 import { blogPosts, getBlogPost } from "@/content/blog/registry";
 import TableOfContents from "./toc";
 import NewsletterSignup from "@/components/newsletter-signup";
+import CompletionSample from "@/components/completion-sample";
+import ReasoningSample from "@/components/reasoning-sample";
+import RubricSample from "@/components/rubric-sample";
+import PatchSample from "@/components/patch-sample";
+import TauSample from "@/components/tau-sample";
+import TermsSample from "@/components/terms-sample";
 import type { Metadata } from "next";
 
 export function generateStaticParams() {
@@ -44,6 +50,12 @@ function slugify(text: string) {
 
 // Custom heading components that add id attributes for TOC linking
 const mdxComponents = {
+  CompletionSample,
+  ReasoningSample,
+  RubricSample,
+  PatchSample,
+  TauSample,
+  TermsSample,
   h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => {
     const text =
       typeof props.children === "string"
@@ -81,9 +93,9 @@ export default async function Page({
   });
 
   return (
-    <main className="px-6 py-20 md:py-32 max-w-[800px] mx-auto">
+    <main className="px-6 py-12 md:py-24 max-w-[800px] mx-auto">
       {/* Header */}
-      <header className="mb-16">
+      <header className="mb-12 md:mb-16">
         <h1 className="font-semibold text-[30px] leading-[1.4] mb-3">
           {frontmatter.title}
         </h1>

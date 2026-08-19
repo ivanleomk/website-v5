@@ -4,7 +4,8 @@
 
 @theme inline {
   --font-sans: var(--font-serif);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
+    Monaco, Consolas, monospace;
   --font-serif: var(--font-serif), Georgia, "Times New Roman", serif;
 }
 
@@ -61,5 +62,90 @@ article h3 {
   font-size: 14px;
   font-weight: 500;
   font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.completion-caret {
+  display: inline-block;
+  width: 1.5px;
+  height: 0.9em;
+  margin-left: 1px;
+  background: #282828;
+  vertical-align: -0.08em;
+  animation: completion-caret 1s steps(1) infinite;
+}
+
+@keyframes completion-caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .completion-caret {
+    animation: none;
+  }
+}
+
+.thinking-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 6px;
+  border-radius: 999px;
+  background: #282828;
+  vertical-align: 1px;
+  animation: thinking-dot 1s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+}
+
+@keyframes thinking-dot {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thinking-dot {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+.prose .katex {
+  font-size: 1em;
+  font-family: inherit;
+  color: inherit;
+  vertical-align: -0.04em;
+}
+
+.prose .katex .katex-html,
+.prose .katex .mord,
+.prose .katex .mathrm,
+.prose .katex .mathit,
+.prose .katex .mathnormal {
+  font-family: var(--font-serif), "Times New Roman", Times, serif;
+}
+
+.prose .katex .mathnormal,
+.prose .katex .mathit {
+  font-style: italic;
+}
+
+.prose .katex .mathrm {
+  font-style: normal;
+}
+
+.prose .katex-display {
+  margin: 1.1em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
