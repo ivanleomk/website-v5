@@ -9,7 +9,7 @@ A model eval scores a completion. An agent eval scores the state after a loop.
 
 At first glance, both setups share the same shape: you pass an input into a model, wait for an output, and compare that output to ground truth. That basic structure has stayed constant since GPT-2. What changed is what sits in the compare slot, and what the system is allowed to do before anything lands there.
 
-I spoke about this transition at an [Artificial Analysis event](http://luma.com/qdl9mr2e?tk=P3UvLA) earlier this year. When a benchmark reports a model score, it usually measures a single completion: one prompt in, one forward pass, and one answer checked against an answer key. When a benchmark reports an agent score, it measures the state of an environment after the model has executed a sequence of tool calls, file edits, terminal commands, and retries.
+I spoke about this transition at an [Artificial Analysis event](http://luma.com/qdl9mr2e?tk=P3UvLA) earlier this year. We used to measure single turns, but now a single eval item can involve a run of tool calls, file edits, terminal commands, and retries, and you score the state of the environment when that run is over.
 
 There are broadly three things you can put in that compare slot, in increasing order of complexity: a completion, a hidden reasoning trace, or the state of an external environment after a loop.
 
