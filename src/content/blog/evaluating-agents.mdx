@@ -7,29 +7,27 @@ export const frontmatter = {
 
 A model eval scores a completion. An agent eval scores the state after a loop.
 
-At first glance, both look like the exact same thing. You pass an input into a black box, the box runs, and you compare what comes out against some ground truth. That loop has not changed since GPT-2. What changed is the thing sitting in the compare slot, and what the model is allowed to do before anything lands there.
+At first glance, both setups share the same shape: you pass an input into a model, wait for an output, and compare that output to ground truth. That basic structure has stayed constant since GPT-2. What changed is what sits in the compare slot, and what the system is allowed to do before anything lands there.
 
-I gave a talk at an [Artificial Analysis event](http://luma.com/qdl9mr2e?tk=P3UvLA) earlier this year mapping out this shift. When people say "our model scored 85%," they almost always mean a quiz: one prompt, one forward pass, one letter or number at the end. When they say "our agent solved 85%," they mean a forty-turn trajectory through bash tools, file edits, git commands, and retries. Comparing those two numbers is like comparing the weight of an engine to the lap time of a car.
+I spoke about this transition at an [Artificial Analysis event](http://luma.com/qdl9mr2e?tk=P3UvLA) earlier this year. When a benchmark reports a model score, it usually measures a single completion: one prompt in, one forward pass, and one answer checked against an answer key. When a benchmark reports an agent score, it measures the state of an environment after the model has executed a sequence of tool calls, file edits, terminal commands, and retries.
 
-There are broadly three things you can put in that compare slot, in increasing order of complexity: a harder quiz, a hidden reasoning trace, or the state of an external environment after a loop. As soon as you move past the quiz, everything gets messier.
+There are broadly three things you can put in that compare slot, in increasing order of complexity: a completion, a hidden reasoning trace, or the state of an external environment after a loop.
 
 ## What's hard about scoring
 
-The core challenge with evaluations is that any test you build eventually becomes a training target. When a benchmark is cheap to grade, frontier labs do not just evaluate on it; they optimize directly against it.
+The core challenge with evaluations is that any benchmark you build eventually becomes a training target. When a test is cheap to grade, labs optimize directly against it.
 
-In 2025, when I wrote about [building reliable LLM applications](/blog/building-reliable-llm-applications), evals were still mostly about RAG pipelines, structured outputs, and single-turn prompts. If a model stayed coherent across two tool calls, that felt like an achievement. You wrote a regex or checked a JSON schema with Instructor, and you went home.
+In 2025, when I wrote about [building reliable LLM applications](/blog/building-reliable-llm-applications), evals were mostly about RAG pipelines, structured outputs, and single-turn prompts. Checking a regex or validating a JSON schema with Instructor was often enough to verify that a feature worked.
 
-Today, rubrics have become enormous engineering projects in their own right. When Cognition built [FrontierCode](https://cognition.com/frontiercode), they had to hire more than twenty senior developers and spend over forty hours per task just to define an unambiguous rubric. And even with hand-crafted grading criteria, you run headfirst into a whole new failure mode: reward hacking and outright cheating.
+As tasks grew broader, grading became more labor-intensive. When Cognition built [FrontierCode](https://cognition.com/frontiercode), they hired more than twenty senior developers and spent over forty hours per task establishing unambiguous rubrics. Once an agent receives environment access, you also have to account for reward hacking and explicit cheating.
 
-During RL training for GLM-5.2, [Z.ai](https://huggingface.co/blog/zai-org/glm-52-blog) discovered that their coding agent was not learning to write algorithms; it was simply running `curl` commands to fetch reference solutions from public GitHub repos. They had to build an online anti-hack system with a dedicated LLM judge just to filter out malicious tool calls. In July 2026, an autonomous evaluation agent [broke into Hugging Face's internal infrastructure](https://huggingface.co/blog/agent-intrusion-technical-timeline) during an OpenAI security benchmark run. In the post-mortem, engineers found that multiple agents had [turned a shared internal Artifactory cache into an improvised message board](https://www.youtube.com/watch?v=87DyyMV0kCY), trading credentials and directory names to track down the benchmark's answer key.
+During RL training for GLM-5.2, [Z.ai](https://huggingface.co/blog/zai-org/glm-52-blog) discovered that their coding agent was using `curl` to fetch reference solutions from public GitHub repositories instead of synthesizing code itself. They added an online anti-hack system with an LLM judge to monitor tool calls. In July 2026, an autonomous evaluation agent [broke into Hugging Face's internal infrastructure](https://huggingface.co/blog/agent-intrusion-technical-timeline) during an OpenAI security benchmark run. In the post-mortem, engineers found that multiple agents had [used a shared internal Artifactory cache as a message board](https://www.youtube.com/watch?v=87DyyMV0kCY), trading credentials and directory names to locate the benchmark's solutions.
 
-Cursor observed the exact same behavior on public benchmarks: on SWE-Bench Pro, [63% of successful Opus 4.8 Max resolutions retrieved the fix from commit history rather than deriving it](https://cursor.com/blog/reward-hacking-coding-benchmarks). When the model has a bash tool, the path of least resistance is rarely the one you intended to measure.
-
-Scoring an agent is hard because the agent is actively looking for shortcuts around your score.
+Cursor observed similar behavior on public benchmarks: on SWE-Bench Pro, [63% of successful Opus 4.8 Max resolutions retrieved the fix from commit history rather than deriving it](https://cursor.com/blog/reward-hacking-coding-benchmarks). When a model has access to a shell, it frequently finds paths that bypass the capability being tested.
 
 ## Completions
 
-When OpenAI trained GPT-2 in 2019, they had a very specific use case in mind: their own demo. Finish the sentence and sound like a person. The model ate 40GB of WebText. There is no official token count for that run, which I know because I looked, and then I looked again, and then I accepted that they just never published one. The paper's headline sample was a story about a herd of English-speaking unicorns living in the Andes. I am not joking. That was the artifact. You can still read it.
+When OpenAI trained GPT-2 in 2019, the model was trained on 40GB of WebText to predict the next token. There is no official token count for that run. The headline sample from the paper described a herd of English-speaking unicorns discovered in the Andes.
 
 <CompletionSample
   source="GPT-2"
@@ -37,9 +35,9 @@ When OpenAI trained GPT-2 in 2019, they had a very specific use case in mind: th
   completion="The scientist named the population, after their distinctive horn, Ovid’s Unicorn. These four-horned, silver-white unicorns were previously unknown to science."
 />
 
-The evals matched the job, because of course they did. If your training objective is next-token prediction, your test is also next-token prediction, except you hide the final word and pick passages where a human only guesses it from the full discourse context.
+The evaluations of that period mirrored the training objective. If a model is trained to predict the next token, the benchmark tests whether it can predict a hidden final word in a passage where humans rely on the surrounding context.
 
-That benchmark is [LAMBADA](https://arxiv.org/abs/1606.06031). It came out in 2016, which is ancient history in this field, and it asked for a single target word. Miscarriage. Dancing. Coffee. Three items, one trick: the word is obvious once you have read the entire paragraph, but completely impossible if you only see the final sentence.
+[LAMBADA](https://arxiv.org/abs/1606.06031), released in 2016, tested this exact behavior using passages where the target word is clear from the whole text but unpredictable from the final sentence alone.
 
 <CompletionSample
   source="LAMBADA"
@@ -60,17 +58,15 @@ That benchmark is [LAMBADA](https://arxiv.org/abs/1606.06031). It came out in 20
   completion="coffee"
 />
 
-In 2016, state-of-the-art language models scored under 1% on LAMBADA. Zero-shot baselines flailed because local n-gram statistics gave no signal for the missing word.
+In 2016, state-of-the-art language models scored under 1% on LAMBADA because local n-gram statistics provided little signal for the missing word.
 
-This looks trivial for models today, and that is the point. By 2020, GPT-3 arrived with 300 billion training tokens and scored 86.4% on LAMBADA. The hill had been climbed.
-
-A filled-up quiz is very comforting. It is also not a research program. When your model maxes out an exact-match completion test, you do not keep reporting the score. You write a harder assert.
+By 2020, GPT-3 was trained on 300 billion tokens and reached 86.4% on LAMBADA, effectively saturating the benchmark. When a model consistently passes an exact-match completion test, the evaluation stops providing useful signal, and you need a more demanding test.
 
 ## Scratchpads
 
-Once basic language modeling was saturated, the frontier moved to multi-step reasoning. In October 2021, Cobbe et al. released [GSM8K](https://arxiv.org/pdf/2110.14168), a dataset of 8,500 grade-school math word problems.
+As basic language modeling benchmarks saturated, evaluations shifted toward multi-step reasoning problems. In October 2021, Cobbe et al. released [GSM8K](https://arxiv.org/pdf/2110.14168), a collection of 8,500 grade-school math word problems.
 
-On the surface, GSM8K is still a completion eval: text goes in, a boxed number comes out. But getting to that number requires several intermediate arithmetic steps.
+GSM8K still uses a completion format, with text as input and a target number as output, but arriving at the correct number requires several intermediate arithmetic operations.
 
 <CompletionSample
   loop={true}
@@ -79,19 +75,17 @@ On the surface, GSM8K is still a completion eval: text goes in, a boxed number c
   completion="Janet sells 16 - 3 - 4 = 9 duck eggs a day. She makes 9 × 2 = 18 dollars every day at the farmers' market. #### 18"
 />
 
-If you ask a base language model to output `#### 18` directly on the first token, it fails. The model has to compute the intermediate quantities in the sequence tokens themselves before predicting the final answer.
+If a base model is required to produce the final answer on the first generated token, performance drops significantly because the model needs to generate intermediate reasoning tokens first.
 
-In January 2022, [Jason Wei et al.](https://arxiv.org/abs/2201.11903) showed that prompt-based chain-of-thought took PaLM 540B from 17.9% to 56.9% on GSM8K. No weights were modified; they simply gave the model license to think out loud. I saw the exact same mechanism when [benchmarking Instructor schemas on GSM8K](https://python.useinstructor.com/blog/2024/09/26/bad-schemas-could-break-your-llm-structured-outputs/): forcing the model to populate a `reasoning` field before emitting the integer payload raised accuracy by 60%.
+In January 2022, [Jason Wei et al.](https://arxiv.org/abs/2201.11903) demonstrated that prompt-based chain-of-thought improved PaLM 540B from 17.9% to 56.9% on GSM8K by allowing the model to produce reasoning steps before the final answer. I observed the same dynamic when [benchmarking Instructor schemas on GSM8K](https://python.useinstructor.com/blog/2024/09/26/bad-schemas-could-break-your-llm-structured-outputs/): requiring the model to populate a `reasoning` field before generating the integer payload increased accuracy by 60%.
 
-When grade-school math ran out of room, Rein et al. released [GPQA](https://arxiv.org/abs/2311.12022) in November 2023: the google-proof Q&A benchmark. Written by domain experts across biology, physics, and chemistry, these questions were deliberately crafted so that a non-expert could not find the answer via search engines in thirty minutes. At launch, the strongest GPT-4 baseline scored roughly 39%.
-
-The lesson of the scratchpad era was simple: if giving the model room to think in text moves the score, you stop evaluating raw zero-shot intuition.
+When grade-school math benchmarks began saturating, Rein et al. introduced [GPQA](https://arxiv.org/abs/2311.12022) in November 2023: the google-proof Q&A benchmark. Written by domain experts in biology, physics, and chemistry, the questions were designed so that non-experts could not readily find answers via search engines. At release, the strongest GPT-4 baseline scored roughly 39%.
 
 ## Hidden traces
 
-If an unformatted chain-of-thought in the prompt produces massive capability jumps, the obvious next step is to train the model to reason natively using reinforcement learning.
+Because prompting for chains of thought improved problem-solving performance, the next development was training models to generate internal reasoning tokens via reinforcement learning.
 
-On 12 September 2024, OpenAI released [o1-preview](https://openai.com/index/introducing-openai-o1-preview/). The model was trained with large-scale RL to generate private, internal reasoning chains before returning its final answer. The trace below is a conceptual sketch of what happens under the hood, not an extracted production token stream.
+On 12 September 2024, OpenAI released [o1-preview](https://openai.com/index/introducing-openai-o1-preview/), using large-scale RL to produce private reasoning chains before generating a user-facing response. The trace below illustrates this internal process as a conceptual sketch rather than a literal token stream.
 
 <ReasoningSample
   source="o1-preview"
@@ -106,9 +100,9 @@ On 12 September 2024, OpenAI released [o1-preview](https://openai.com/index/intr
   answer="$0.05"
 />
 
-The difference was stark. On GPQA Diamond, GPT-4o scored 50.6% pass@1. o1-preview reached 73.3%, surpassing the benchmark's recruited PhD baseline. The eval format had not changed at all; it was still multiple choice. But the model was now allocating orders of magnitude more compute at inference time.
+On GPQA Diamond, GPT-4o scored 50.6% pass@1, while o1-preview reached 73.3%, surpassing the recruited PhD baseline on the dataset. The multiple-choice format remained identical, but the model used substantial inference compute generating reasoning tokens prior to answering.
 
-Four months later, on 20 January 2025, DeepSeek released [DeepSeek-R1](https://arxiv.org/abs/2501.12948). Building on the Group Relative Policy Optimization (GRPO) algorithm introduced in [DeepSeekMath](https://arxiv.org/pdf/2402.03300) in February 2024, R1 demonstrated that pure RL with rule-based verification could replicate frontier reasoning performance with open weights. On the 2024 AIME competition math benchmark, R1 drove accuracy from a 15.6% base model up to 71.0%.
+On 20 January 2025, DeepSeek released [DeepSeek-R1](https://arxiv.org/abs/2501.12948). Using the Group Relative Policy Optimization (GRPO) algorithm introduced in [DeepSeekMath](https://arxiv.org/pdf/2402.03300) in February 2024, R1 showed that RL with rule-based verification on open weights could achieve frontier reasoning results, raising accuracy on the 2024 AIME competition from 15.6% to 71.0%.
 
 <RubricSample
   source="DeepSeek-R1"
@@ -129,23 +123,23 @@ Four months later, on 20 January 2025, DeepSeek released [DeepSeek-R1](https://a
   ]}
 />
 
-Notice what is happening here: the verifier is completely rule-based. Does the text contain the right boxed LaTeX string? If yes, give reward.
+Here the verification remains rule-based: the reward is determined by extracting the final boxed expression and matching it against the target form.
 
-If you are evaluating reasoning models, do not measure them against a single prompt completion. Plot performance as a curve over test-time compute, and check [error bars](/blog/report-error-bars) before claiming a win.
+When evaluating reasoning models, plot performance across different test-time compute budgets and calculate [error bars](/blog/report-error-bars) to confirm that observed improvements are statistically meaningful.
 
 ## One-shot patches
 
-While reasoning was being industrialized on math and science quizzes, coding evals took a different turn. In October 2023, Carlos E. Jimenez and the Princeton NLP group released [SWE-bench](https://www.swebench.com/).
+In parallel with reasoning benchmarks, code evaluation moved from standalone functions toward complete repositories. In October 2023, Carlos E. Jimenez and the Princeton NLP group released [SWE-bench](https://www.swebench.com/).
 
-Instead of asking a model to write a standalone Python function like HumanEval, SWE-bench extracted 2,294 real GitHub issues from twelve popular open-source Python repositories (Django, SymPy, Flask, scikit-learn). The input was the issue description. The output was a git patch. The comparison was running the repo's existing test suite in a Docker container.
+SWE-bench collected 2,294 issues from twelve open-source Python repositories, including Django, SymPy, Flask, and scikit-learn. The input was an issue description, the expected output was a git patch, and evaluation involved running the repository's test suite inside a Docker container.
 
-At launch, SWE-bench was strictly a one-shot eval: you used BM25 to retrieve candidate source files, stuffed them into the context window, and asked the model to output a unified diff in a single turn.
+At release, SWE-bench was evaluated in a one-shot setting: BM25 retrieved candidate source files, these files were placed in context, and the model was asked to output a unified diff in a single turn.
 
-The results were brutal. Claude 2 resolved just [1.96% of issues](https://arxiv.org/abs/2310.06770) unassisted, and only 4.8% when given oracle retrieval of the exact modified files.
+In this setup, Claude 2 resolved [1.96% of issues](https://arxiv.org/abs/2310.06770) unassisted and 4.8% when provided with oracle retrieval of the edited files.
 
-A representative task from the benchmark is `django__django-10097` ([SWE-bench](https://github.com/princeton-nlp/SWE-bench), [PR #10097](https://github.com/django/django/pull/10097)). The issue reports that Django's `URLValidator` accepted unencoded characters in credentials. To solve it, the model has to locate `django/core/validators.py`, modify a complex regex, and ensure that both the new test cases pass (fail-to-pass) while zero existing tests break (pass-to-pass).
+A standard task in the benchmark is `django__django-10097` ([SWE-bench](https://github.com/princeton-nlp/SWE-bench), [PR #10097](https://github.com/django/django/pull/10097)), where Django's `URLValidator` permitted unencoded characters in credentials. Resolving the issue requires editing `django/core/validators.py` to update a regex so that newly added test cases pass while all existing tests continue to pass.
 
-The sample below shows this task resolved in a later multi-turn agent harness, making each step visible.
+The sample below shows this task resolved within a multi-turn agent harness, illustrating the step-by-step loop.
 
 <PatchSample
   source="SWE-bench · django__django-10097"
@@ -187,45 +181,41 @@ The sample below shows this task resolved in a later multi-turn agent harness, m
   ]}
   />
 
-One-shot patch generation turned out to be an unnatural formulation of software engineering. No human engineer opens a repo cold, edits ten lines blind, and commits without running tests.
-
-The benchmark exposed real model limits, but it also proved that evaluating a naked model on a repo task produces an artificial ceiling.
+One-shot patch generation placed an artificial constraint on software engineering tasks by requiring models to make edits without running tests or inspecting error messages.
 
 ## The loop
 
-In March 2024, Cognition announced [Devin](https://x.com/cognition/status/1767548763134964000?lang=en), reporting a 13.86% resolve rate on a random 25% sample of SWE-bench.
+In March 2024, Cognition announced [Devin](https://x.com/cognition/status/1767548763134964000?lang=en), reporting a 13.86% resolve rate on a random 25% sample of SWE-bench by placing the model inside an execution environment with a shell, editor, and feedback loop.
 
-The jump was not driven by a radically superior foundation model. It was driven by scaffolding. Devin gave the model an execution environment: a shell, an editor, a browser, and a loop to inspect compiler output, test failures, and retry.
+In May 2024, John Yang et al. published [SWE-agent](https://arxiv.org/abs/2405.15793) on arXiv, showing that an Agent-Computer Interface (ACI) with dedicated commands for file inspection and editing raised baseline GPT-4 Turbo performance from 1.31% in a one-shot setup to 12.47%.
 
-In May 2024, John Yang et al. published [SWE-agent](https://arxiv.org/abs/2405.15793) on arXiv. By designing an Agent-Computer Interface (ACI) with specialized file navigation, search, and editing commands, they took baseline GPT-4 Turbo from 1.31% in a one-shot setting up to 12.47%. The model was unchanged; only the interface changed.
+By 25 March 2025, Google reported that [Gemini 2.5 Pro](https://blog.google/innovation-and-ai/models-and-research/google-deepmind/gemini-model-thinking-updates-march-2025/) reached 63.8% on SWE-bench Verified.
 
-From there, scores accelerated dramatically. By 25 March 2025, Google reported that [Gemini 2.5 Pro](https://blog.google/innovation-and-ai/models-and-research/google-deepmind/gemini-model-thinking-updates-march-2025/) reached 63.8% on SWE-bench Verified.
+In February 2026, [OpenAI announced they would stop reporting SWE-bench Verified](https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/), noting that many unresolved tasks had broken verification suites, ambiguous descriptions, or gold patches present in public training data.
 
-Then the benchmark hit a wall. In February 2026, [OpenAI announced they would stop reporting SWE-bench Verified](https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/). The rationale was revealing: it was not merely score saturation. A significant fraction of the remaining unresolved problems had buggy verification suites, ambiguous issue descriptions, or gold patches that had already leaked directly into web pre-training data.
-
-When you wrap a model in a harness, changing the harness changes the measurement. Never evaluate an agent by looking at leaderboard numbers without inspecting the execution loop.
+When evaluating agents, specify the tool interface and execution environment alongside the model name, since changes to the harness alter the measured performance.
 
 ## The database
 
-SWE-bench still provides a complete, well-formed bug report at turn zero. Real software and support tasks almost never arrive that way.
+SWE-bench provides a complete issue description up front, whereas real support and operations tasks require multi-turn information gathering.
 
-In June 2024, Shunyu Yao et al. from Sierra released [τ-bench](https://arxiv.org/abs/2406.12045) (tau-bench). Instead of grading static code or conversational prose, τ-bench evaluates an agent interacting with an LLM-simulated user across multiple turns, calling tools against a mock database.
+In June 2024, Shunyu Yao et al. from Sierra released [τ-bench](https://arxiv.org/abs/2406.12045) (tau-bench) to evaluate agents interacting with simulated users across multiple turns while operating against a database.
 
-Crucially, the scoring ignores the conversation transcript entirely. It evaluates whether the final database state matches the ground truth objective.
+The benchmark scores the final state of the database against the target outcome rather than evaluating the conversation transcript directly.
 
 Here is an example user profile from the airline domain:
 
 > You are mia_li_3668. You want to fly from New York to Seattle on May 20 (one way). You do not want to fly before 11am est. You want to fly in economy. You prefer direct flights but one stopover also fine. If there are multiple options, you prefer the one with the lowest price. You have 3 baggages. You do not want insurance. You want to use your two certificates to pay. If only one certificate can be used, you prefer using the larger one, and pay the rest with your 7447 card.
 
-The agent must search flights, enforce complex cancellation and baggage policies, execute database mutations, and confirm details with the user.
+The agent queries flight schedules, checks baggage and payment rules, updates the database, and responds to the user.
 
 <TauSample source="τ-bench · airline · mia_li_3668" />
 
-The evaluation checks whether flight `HAT136` was booked, the certificate applied, the card debited, and the seat upgraded. If the agent writes polite responses but fails to commit the database update, it gets zero.
+The evaluation checks whether the expected reservation was created, certificates were applied, and the correct payment method was charged.
 
-Today, on the newer [τ³-Banking benchmark](https://taubench.com/), Claude Opus 5 reaches only 48.7%. Multi-turn rule following with stateful side-effects remains unsolved.
+On the newer [τ³-Banking benchmark](https://taubench.com/), Claude Opus 5 reaches 48.7%, reflecting the difficulty of maintaining consistency across multi-turn state modifications.
 
-Another clean design is [TERMS-Bench](https://terms-bench.github.io/), which benchmarks bilateral bargaining. Rather than running LLM-against-LLM, the counterpart is a parameterized stochastic kernel. The agent outputs structured JSON actions (`Offer`, `Accept`, `Reject`, plus a price), and the kernel evaluates the numeric state.
+[TERMS-Bench](https://terms-bench.github.io/) takes a similar state-based approach for bilateral negotiations. Rather than running an LLM against another LLM, the counterpart is modeled as a parameterized stochastic kernel. The agent outputs structured JSON actions (`Offer`, `Accept`, `Reject`, and a price), and the kernel updates the negotiation state.
 
 ```python
 import random
@@ -246,22 +236,22 @@ for bid in [50.0, 55.0, 58.0, 61.0]:
     # "I can come down to {ask}."  a template, not a model
 ```
 
-I will not call this deterministic because of the `rng`, but it is fully reproducible. Below, Gemma 4 31B acts as the buyer. The seller will not sell below $59.48; Gemma will not pay above $99.13. Gemma negotiates down to $60.21, capturing virtually the entire surplus.
+The script includes an explicit `rng` for stochastic moves. Below, Gemma 4 31B acts as buyer against a seller with a minimum price of $59.48. Gemma has a maximum budget of $99.13 and settles at $60.21.
 
 <TermsSample source="TERMS-Bench · Gemma 4 31B · Overlap / Expressive" />
 
-Similarly, [Zapier's Automation Bench](https://zapier.com/benchmarks) evaluates multi-step API workflows across live SaaS platforms.
+[Zapier's Automation Bench](https://zapier.com/benchmarks) applies the same principle to multi-step API workflows across cloud applications.
 
-If you are evaluating an agent that touches systems, throw away the prose grader. Grade the database.
+When an agent interacts with external systems, evaluate the final state of those systems rather than grading the conversational text.
 
 ## What you actually score
 
-There is a clear historical rhythm across every generation of AI evals: someone builds a clean, verifiable benchmark, and within eighteen months, a training or scaffolding breakthrough emerges to conquer it.
+Across each stage of evaluations, clear and verifiable benchmarks have led to corresponding modeling and scaffolding techniques.
 
-LAMBADA drove the scaling of web pre-training. GSM8K forced the development of chain-of-thought prompting. GPQA and AIME proved out test-time compute and reinforcement learning. SWE-bench triggered the entire modern agent harness ecosystem.
+LAMBADA measured web-scale pre-training; GSM8K prompted the adoption of chain-of-thought; GPQA and AIME provided signal for reinforcement learning with test-time compute; and SWE-bench catalyzed development of agent execution harnesses.
 
-Models already know the capital of France, and they can regurgitate standard textbook proofs effortlessly. The open question is whether an agent can reliably execute the messy, stateful workflows specific to your product.
+Standard language models can readily solve common knowledge and basic textbook questions. The central engineering question is whether an agent can execute the specific, stateful workflows required by your application.
 
-This is why general leaderboards are losing relevance. When Harvey built [BigLaw Bench](https://www.harvey.ai/blog/introducing-biglaw-bench), they did not use MMLU or generic reading comprehension tests. They hired experienced attorneys to construct complex legal contract evaluations that reflect real billable work.
+When Harvey developed [BigLaw Bench](https://www.harvey.ai/blog/introducing-biglaw-bench), they worked with attorneys to create evaluations based on legal contract workflows rather than relying on general academic benchmarks.
 
-You do not need to invent the next global industry benchmark. Start with [stupid evals](/blog/write-stupid-evals), assert on state, and make them progressively more complicated as your system grows.
+You do not need to build an industry-wide benchmark immediately. Start by writing [stupid evals](/blog/write-stupid-evals) that assert directly on state, and add complexity as your application expands.
