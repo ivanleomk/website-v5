@@ -33,7 +33,7 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-white text-[#282828] flex flex-col">
         {/* Global Minimal Navigation */}
-        <header className="max-w-[800px] w-full mx-auto px-6 pt-10 pb-4 flex justify-between items-baseline">
+        <header className="max-w-[800px] w-full mx-auto px-6 pt-8 md:pt-10 pb-4 flex items-baseline justify-start gap-4 md:justify-between md:gap-0">
           <Link href="/" className="text-[14px] font-medium text-[#282828] no-underline hover:text-[#676767] transition-colors">
             Ivan Leo
           </Link>

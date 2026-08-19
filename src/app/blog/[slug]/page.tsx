@@ -93,9 +93,9 @@ export default async function Page({
   });
 
   return (
-    <main className="px-6 py-20 md:py-32 max-w-[800px] mx-auto">
+    <main className="px-6 py-12 md:py-24 max-w-[800px] mx-auto">
       {/* Header */}
-      <header className="mb-16">
+      <header className="mb-12 md:mb-16">
         <h1 className="font-semibold text-[30px] leading-[1.4] mb-3">
           {frontmatter.title}
         </h1>
