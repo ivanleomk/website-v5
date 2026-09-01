@@ -11,6 +11,7 @@ import migratingToReactInkContent, { frontmatter as migratingToReactInkFrontmatt
 import reportErrorBarsContent, { frontmatter as reportErrorBarsFrontmatter } from "./report-error-bars.mdx";
 import runningBetterExperimentsContent, { frontmatter as runningBetterExperimentsFrontmatter } from "./running-better-experiments.mdx";
 import threeLessonsManusContent, { frontmatter as threeLessonsManusFrontmatter } from "./three-lessons-manus.mdx";
+import valueMaxxingContent, { frontmatter as valueMaxxingFrontmatter } from "./value-maxxing.mdx";
 import writeStupidEvalsContent, { frontmatter as writeStupidEvalsFrontmatter } from "./write-stupid-evals.mdx";
 import writingExtractionEvalsContent, { frontmatter as writingExtractionEvalsFrontmatter } from "./writing-extraction-evals.mdx";
 
@@ -428,6 +429,38 @@ export const blogPosts: BlogPost[] = [
         {
             "text": "Join us!",
             "id": "join-us",
+            "level": 2
+        }
+    ],
+  },
+  {
+    slug: "value-maxxing",
+    frontmatter: valueMaxxingFrontmatter,
+    Content: valueMaxxingContent,
+    headings: [
+        {
+            "text": "Start Simple",
+            "id": "start-simple",
+            "level": 2
+        },
+        {
+            "text": "Customizing for Your Needs",
+            "id": "customizing-for-your-needs",
+            "level": 2
+        },
+        {
+            "text": "Cultivating Taste and Verification",
+            "id": "cultivating-taste-and-verification",
+            "level": 2
+        },
+        {
+            "text": "Scaling to Your Team",
+            "id": "scaling-to-your-team",
+            "level": 2
+        },
+        {
+            "text": "Conclusion",
+            "id": "conclusion",
             "level": 2
         }
     ],
