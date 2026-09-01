@@ -4,10 +4,10 @@ import NewsletterSignup from "@/components/newsletter-signup";
 export default function Home() {
   const selectedEssays = [
     {
-      slug: "grep-beats-sqlite-fts",
-      title: "How Simple Grep Beats Naive SQL",
-      date: "Jun 2026",
-      description: "I benchmarked grep vs SQLite FTS across 300k tokens. grep won: 29.6% cheaper, better accuracy",
+      slug: "value-maxxing",
+      title: "Value Maxxing",
+      date: "Sep 2026",
+      description: "Don't forget to have fun",
     },
     {
       slug: "three-lessons-manus",

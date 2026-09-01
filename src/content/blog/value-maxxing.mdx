@@ -1,0 +1,82 @@
+export const frontmatter = {
+  title: "Value Maxxing",
+  date: "2026-09-01",
+  author: "Ivan Leo",
+  description: "Don't forget to have fun",
+};
+
+Token anxiety is a real thing.
+
+It's easy to look at people bragging about burning billions of tokens, juggling seven Codex accounts, or spinning up swarms of autonomous agents, and feel like you're falling behind.
+
+At the end of the day, burning tokens is just a byproduct of running a model. What you actually care about is creating something useful for yourself or someone else.
+
+The best way to build this intuition is to just follow your curiosity and tackle the small blockers in your day-to-day. As you figure out what works and encode what "good" looks like into prompts, skills, and simple scripts, those small wins compound into real leverage.
+
+## Start Simple
+
+When people start using AI, they often look for massive, world-changing use cases on day one, like spinning up an automated software factory or automating an entire team's workflow. When that inevitably breaks, they assume models aren't ready.
+
+Instead of hunting for a giant project, start with the small, everyday friction right in front of you.
+
+When I first joined DeepMind, what made the biggest difference for me wasn't some complex multi-agent framework. Honestly speaking, it was just having a quick conversation with Gemini at the end of every day and every week. I'd pull out my calendar, talk through what I had worked on that day, and review how I was tracking against my weekly priorities.
+
+It wasn't anything fancy; it was just Gemini updating a bunch of markdown files. But having a low-friction sounding board to organize my thoughts gave me immense value right away.
+
+You see the same thing in technical work. If you're doing scientific research, you can start by using Antigravity alongside Google DeepMind's [Science Skills](https://github.com/google-deepmind/science-skills) for basic literature lookups, pulling data from databases like AlphaGenome or UniProt, and tracing citations without writing complex scaffolding from scratch.
+
+When the model handles the initial retrieval across hundreds of papers, your job shifts from manual searching to verifying citations and evaluating results.
+
+Starting small with simple tools builds your intuition for how models actually behave. Once you get a few small wins working reliably, you can start combining them to tackle much larger problems.
+
+## Customizing for Your Needs
+
+Generic tools are a great starting point, but they're only a launchpad. As you get comfortable prompting models, you realize your problems have specific quirks, constraints, and preferences that generic software can't anticipate.
+
+The real unlock is that software is no longer one-size-fits-all. You can build custom workflows around your exact routine, and writing a skill or hooking up a few APIs is often the easiest way to do it.
+
+For example, I've been learning Korean over the past few months. Instead of using a standard language app, I customized a workflow around how I actually study:
+
+- Having Grokbot message me vocabulary and short reading passages every morning via Telegram
+- Turning tricky grammar concepts into personalized interactive quizzes and flashcard web apps on the fly
+- Hooking up Gemini text-to-speech to turn those reading passages into audio lessons and mini-podcasts matched to my exact comprehension level
+
+You see the exact same evolution when you use tools like Science Skills for a while. At first, you use the stock skills for basic queries. But once you use them every day, you start bumping into the specific quirks of your lab's workflow:
+
+- **Custom Schemas:** The stock skill outputs markdown tables, but you want structured JSON that pipes straight into your lab's Pandas and R analysis scripts.
+- **Deterministic Verifiers:** Instead of visually inspecting molecular structures, you hook in a python script to check biochemical constraints and run energy minimization checks before returning results.
+- **Internal Knowledge:** You connect it to your lab's private assay logs or negative results database so the model stops suggesting experiments someone already disproved two years ago.
+
+Instead of waiting for someone else to build the perfect tool, you're encoding your own taste and standards into software. Every time you customize a workflow, you get a clearer sense of what the model does well and what context it needs to succeed.
+
+## Cultivating Taste and Verification
+
+As your ambition grows, the differentiator becomes taste: developing strong opinions and a clear standard for what the final output should look like.
+
+Traditionally, a software engineer developed taste by spending years on the job, reading thousands of pull requests, and grinding through dense documentation. With language models acting as infinitely patient teachers, code generation is cheap, so your primary job becomes verification.
+
+Before I worked on LLMs and joined DeepMind, I built a structured outputs parser compatible with Hugging Face's Transformers library so that passing a Pydantic model returned structured JSON. The model generated the initial code in about 10 minutes. But I spent the next two hours studying every line it wrote, inspecting edge cases, and understanding the token masking mechanics.
+
+In the past, understanding that architecture would have required days of digging through obscure tutorials and codebases. With a model, you can ask every naive question on your mind and build deep intuition at the speed of your curiosity.
+
+## Scaling to Your Team
+
+It's easy to use models just to blast out code for yourself. But when you work on a team, raw generation speed isn't the bottleneck; coordination and trust are.
+
+If you generate 2,000 lines of code in ten minutes and dump it into a pull request without tests or context, you haven't saved time; you've just shifted the cognitive burden onto your teammates.
+
+If you think about it, working well with agents isn't that different from being a great collaborator. Good collaboration comes down to understanding what the other person needs to achieve their goal and setting them up to succeed.
+
+Working with agents is the exact same thing. When you prompt a model, you set it up for success by giving it clear context, precise schemas, and deterministic verifiers. When you work with teammates, you set them up for success by producing artifacts that actually save them time:
+
+- **Automated verifiers and tests:** Setting up deterministic validation scripts and reproducible test cases before generating implementation code
+- **Detailed friction logs:** Documenting exact reproduction steps, edge cases, and failure modes when reviewing PRs or debugging issues
+- **High-signal documentation:** Turning messy PR threads, design debates, and meeting notes into clear, searchable docs your team can rely on
+
+The mindset shifts from "How many tokens can I burn for myself?" to "What does the other side, whether a model or a teammate, need to succeed?"
+
+## Conclusion
+
+Token maxxing and value maxxing are just labels for how you use a tool. It isn't a contest to see who burns the most compute, stacks the most subscriptions, or spins up the most elaborate agent harnesses.
+
+Token anxiety fades when you stop measuring token volume and start measuring what you actually unblock. Follow your curiosity, start with the small friction right in front of you, and build the habit one feedback loop at a time.
