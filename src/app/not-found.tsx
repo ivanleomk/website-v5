@@ -8,26 +8,20 @@ export const metadata: Metadata = {
 };
 
 /**
- * Get a curated list of suggested essays for the 404 page.
- * Prefers agent/eval-focused posts based on site focus.
+ * Get suggested essays for the 404 page.
+ * Returns write-stupid-evals and value-maxxing from the registry.
  */
 function getSuggestedPosts() {
-  // Priority slugs for 404 suggestions (evals/agents bias)
-  const prioritySlugs = [
-    "write-stupid-evals",
-    "agentic-search",
-    "building-reliable-llm-applications",
-    "how-does-instructor-work",
-  ];
+  const prioritySlugs = ["write-stupid-evals", "value-maxxing"];
 
-  // Try to pull from registry to stay in sync with live posts
+  // Pull from registry to stay in sync with live posts
   const suggested = prioritySlugs
     .map((slug) => blogPosts.find((post) => post.slug === slug))
     .filter((post) => post !== undefined)
-    .slice(0, 4)
     .map((post) => ({
       slug: post.slug,
       title: post.frontmatter.title ?? post.slug,
+      date: post.frontmatter.date ?? "",
       description: post.frontmatter.description ?? "",
     }));
 
@@ -50,24 +44,39 @@ export default function NotFound() {
 
       <section className="border-t border-gray-100 pt-10">
         <h2 className="font-sans text-[13px] font-bold uppercase tracking-widest text-[#676767] mb-6">
-          Suggested Reading
+          Selected Essays
         </h2>
-        <ul className="list-none p-0 m-0 space-y-6">
-          {suggestions.map((post) => (
-            <li key={post.slug} className="group">
-              <Link
-                href={`/blog/${post.slug}`}
-                className="block no-underline text-inherit"
-              >
-                <span className="font-serif text-[17px] font-medium group-hover:text-[#676767] transition-colors">
-                  {post.title}
-                </span>
-                <p className="mt-1 text-[14px] font-serif text-[#676767] leading-relaxed">
-                  {post.description}
-                </p>
-              </Link>
-            </li>
-          ))}
+        <ul className="list-none p-0 m-0 space-y-8">
+          {suggestions.map((post) => {
+            const dateObj = post.date ? new Date(post.date) : null;
+            const displayDate = dateObj
+              ? dateObj.toLocaleDateString("en-US", {
+                  month: "short",
+                  year: "numeric",
+                })
+              : "";
+
+            return (
+              <li key={post.slug} className="group">
+                <Link
+                  href={`/blog/${post.slug}`}
+                  className="block no-underline text-inherit"
+                >
+                  <div className="flex justify-between items-baseline gap-4">
+                    <span className="font-serif text-[17px] font-medium group-hover:text-[#676767] transition-colors">
+                      {post.title}
+                    </span>
+                    <span className="text-[13px] font-sans text-[#676767] whitespace-nowrap">
+                      {displayDate}
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-[14px] font-serif text-[#676767] leading-relaxed">
+                    {post.description}
+                  </p>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
 
         <div className="mt-8 pt-6 border-t border-gray-100">
