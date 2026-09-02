@@ -1,5 +1,21 @@
 import Link from "next/link";
 import NewsletterSignup from "@/components/newsletter-signup";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Ivan Leo - Developer Experience Engineer & AI/LLM Consultant",
+  description: "Developer Experience Engineer at Google DeepMind working on Gemini. Writing about evals, agents, and LLM engineering. Previously at Manus (acquired by Meta) and Instructor.",
+  alternates: {
+    canonical: "https://ivanleo.com",
+  },
+  openGraph: {
+    title: "Ivan Leo - Developer Experience Engineer & AI/LLM Consultant",
+    description: "Developer Experience Engineer at Google DeepMind working on Gemini. Writing about evals, agents, and LLM engineering.",
+    url: "https://ivanleo.com",
+    siteName: "Ivan Leo",
+    type: "website",
+  },
+};
 
 export default function Home() {
   const selectedEssays = [
@@ -33,6 +49,9 @@ export default function Home() {
     <main className="max-w-[800px] mx-auto px-6 py-12 md:py-16">
       {/* Introduction */}
       <div className="mb-16 font-serif text-[17px] leading-[1.65] text-[#282828]">
+        <h1 className="text-[28px] font-bold font-sans mb-8 text-[#282828]">
+          Developer Experience Engineer & AI/LLM Consultant
+        </h1>
         <p className="mt-6">
           I work on Developer Experience at{" "}
           <strong>Google DeepMind</strong>, where I focus on making it easy to
