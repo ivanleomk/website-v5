@@ -20,6 +20,30 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Blog Management
+
+### Adding Blog Posts
+
+1. Create a new `.mdx` file in `src/content/blog/`
+2. Add frontmatter with `title`, `date`, `author`, and `description`
+3. The blog registry is automatically generated before build/dev
+
+### SEO and Redirects
+
+Run SEO validation to check for conflicts:
+
+```bash
+npm run seo:check
+```
+
+This validates that redirect sources don't conflict with live content slugs.
+
+**To add a redirect:**
+1. Edit `src/seo/redirects.ts`
+2. Add entry to appropriate array
+3. Run `npm run seo:check` to validate
+4. See `docs/seo-redirects.md` for detailed guide
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

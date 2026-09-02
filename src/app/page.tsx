@@ -1,5 +1,14 @@
 import Link from "next/link";
 import NewsletterSignup from "@/components/newsletter-signup";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Ivan Leo",
+  description: "Personal blog",
+  alternates: {
+    canonical: "https://ivanleo.com",
+  },
+};
 
 export default function Home() {
   const selectedEssays = [
