@@ -1,0 +1,76 @@
+export const frontmatter = {
+  title: "Turn One Knob",
+  date: "2026-09-06",
+  author: "Ivan Leo",
+  description: "What a 124M model taught me about SFT data mixes",
+};
+
+You don't need a big model to learn post-training.
+
+It's tempting to think you do. Most of what gets written about supervised fine-tuning involves clusters, billions of tokens, and results you can't reproduce at home. So people either wait until they have access to that, or skip the fundamentals and go straight to prompting.
+
+I've been doing the opposite. I took gpt2-124M, a CPU, and a few hundred rows of instruction data, and ran a small set of ablations on the data mix. The whole thing took about 87 minutes of compute and cost nothing. The absolute numbers are junk, and I'll get to why, but the deltas taught me more about how data shapes a model than anything I'd read.
+
+The setup is simple. Freeze an eval. Change one thing about the training mix. Look at what moves.
+
+## Freeze the Instrument
+
+Before I trained anything, I wrote down four metrics and promised myself I wouldn't touch them for the rest of the experiment.
+
+This sounds obvious but it's the part most people skip. If you tweak the eval and the training data at the same time, you can't tell which one caused the change. Every number you get is a mix of "the model got better" and "I moved the goalposts."
+
+The four metrics were small and cheap to run. The one that matters for this post is `code_pass@1`: give the model a small coding problem, run its answer, count how often it passes. No judge model, no rubric, just a script that says yes or no.
+
+Once the metrics were frozen, the training mix became the only variable. That's what makes a run comparable to the one before it.
+
+## A, B, and D
+
+I ran three configurations that are worth talking about.
+
+**A was the baseline.** 510 rows, the mix as I'd first assembled it, no cleaning. `code_pass@1` came out at 0%. A 124M model trained on 510 examples can't write working code, which shouldn't surprise anyone. But zero is a useful floor.
+
+**B was decontamination.** Before trusting any number, I wanted to know whether my training set had leaked into my eval. So I planted a `two_sum` problem in the training data on purpose, then ran a decontamination pass to see if it would get caught. It did, along with 83 other rows I hadn't planted. That took the set down to 426 rows.
+
+Code stayed at 0%.
+
+This was the first thing I learned. Contamination is a correctness problem, not a performance one. Removing it didn't make the model better. It made the score honest. If B had gone *up*, I would have had a much bigger problem, because it would have meant the eval was measuring something other than the skill.
+
+**D was a reweight.** Instead of removing rows, I changed the allocation. Code went from roughly 30% of the mix to 50%, which brought the total to 666 rows. Same eval, same model, same training recipe.
+
+`code_pass@1` went from 0% to 10%.
+
+The other three metrics didn't move. I expected some of them to fall, since pushing more of the mix towards code should cost something elsewhere. At this scale, it didn't.
+
+## Coverage vs Allocation
+
+Walking A to B to D made a distinction click for me that I'd read about but never felt.
+
+Decontamination is about **coverage**. It asks: is the eval measuring something the model hasn't already seen? It's a check on the instrument. You run it so that the number you get means what you think it means. It's not supposed to improve the model, and if you find yourself hoping it will, that's a sign you're grading the model on memorisation.
+
+Reweighting is about **allocation**. Given a fixed budget of examples, where should they go? This is the lever that actually moves the metric you care about, and the one that comes with trade-offs. At larger scale you'd expect a heavier code mix to eat into something else. Work on [SFT data composition](https://arxiv.org/abs/2310.05492) finds exactly that kind of interference between abilities once the model has enough capacity to be good at more than one thing.
+
+My model didn't have that capacity, so I didn't see the trade-off. That's fine. The point of the run wasn't to find the optimal mix for gpt2. It was to see the mechanism with my own eyes: change one knob, one metric moves, the rest hold. Now when I read a paper about data mixtures, I have a picture of what they're describing instead of a vague sense that "data matters."
+
+## Why the Absolute Numbers Are Junk
+
+I want to be clear about what 10% means here, because it's easy to overread.
+
+Ten percent pass@1 on a 124M model trained on 666 rows is not a result anyone should cite. Everything about the run is small enough that a handful of problems flipping, or a different random seed, could swing the number. If I were writing this up properly, I'd run multiple seeds and report [error bars](/blog/report-error-bars), and I haven't done that yet.
+
+What I trust is the shape. Baseline zero, decontam zero, reweight non-zero, everything else flat. That pattern is consistent with the story that allocation drives the metric, and it's the kind of thing you can check for yourself in an afternoon.
+
+Small models and small data are a good place to learn because they're fast and free. They're a bad place to draw conclusions about what works at scale. Keeping those two separate is most of the discipline.
+
+## What's Next
+
+The natural follow-up is quality. Right now every row in the mix counts the same. [AlpaGasus](https://arxiv.org/abs/2307.08701) showed a few years ago that you can throw away most of an instruction dataset if you keep the good rows, so a simple quality classifier on top of the mix is the next knob I want to turn. After that I'd like to try the same loop on a real dataset like OpenHermes instead of a few hundred hand-assembled rows.
+
+I don't know yet whether either of those will move the metric. That's sort of the point. The eval is frozen, so I'll find out.
+
+If you want to run this yourself, the notebooks are in my evals workspace on GitHub: [mix to metrics](https://github.com/ivanleomk/evals-workspace/blob/main/tutorials/notebooks/02_sft_mix_to_metrics.ipynb), [coverage to evals](https://github.com/ivanleomk/evals-workspace/blob/main/tutorials/notebooks/04_sft_coverage_to_evals.ipynb), and [data mixtures](https://github.com/ivanleomk/evals-workspace/blob/main/tutorials/notebooks/05_data_mixtures.ipynb). They run on a CPU.
+
+## Conclusion
+
+I'm not an expert on post-training. I'm writing this down because the loop was cheap enough to run and clear enough that I actually learned something from it.
+
+Freeze the eval. Change one thing. Read the delta, not the score. It works at 124M and I'd be surprised if it stopped working when the model gets bigger.

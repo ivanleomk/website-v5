@@ -10,6 +10,7 @@ import howDoesInstructorWorkContent, { frontmatter as howDoesInstructorWorkFront
 import migratingToReactInkContent, { frontmatter as migratingToReactInkFrontmatter } from "./migrating-to-react-ink.mdx";
 import reportErrorBarsContent, { frontmatter as reportErrorBarsFrontmatter } from "./report-error-bars.mdx";
 import runningBetterExperimentsContent, { frontmatter as runningBetterExperimentsFrontmatter } from "./running-better-experiments.mdx";
+import sftDataMixContent, { frontmatter as sftDataMixFrontmatter } from "./sft-data-mix.mdx";
 import threeLessonsManusContent, { frontmatter as threeLessonsManusFrontmatter } from "./three-lessons-manus.mdx";
 import valueMaxxingContent, { frontmatter as valueMaxxingFrontmatter } from "./value-maxxing.mdx";
 import writeStupidEvalsContent, { frontmatter as writeStupidEvalsFrontmatter } from "./write-stupid-evals.mdx";
@@ -407,6 +408,43 @@ export const blogPosts: BlogPost[] = [
         {
             "text": "Key Takeaways",
             "id": "key-takeaways",
+            "level": 2
+        }
+    ],
+  },
+  {
+    slug: "sft-data-mix",
+    frontmatter: sftDataMixFrontmatter,
+    Content: sftDataMixContent,
+    headings: [
+        {
+            "text": "Freeze the Instrument",
+            "id": "freeze-the-instrument",
+            "level": 2
+        },
+        {
+            "text": "A, B, and D",
+            "id": "a-b-and-d",
+            "level": 2
+        },
+        {
+            "text": "Coverage vs Allocation",
+            "id": "coverage-vs-allocation",
+            "level": 2
+        },
+        {
+            "text": "Why the Absolute Numbers Are Junk",
+            "id": "why-the-absolute-numbers-are-junk",
+            "level": 2
+        },
+        {
+            "text": "What's Next",
+            "id": "whats-next",
+            "level": 2
+        },
+        {
+            "text": "Conclusion",
+            "id": "conclusion",
             "level": 2
         }
     ],
