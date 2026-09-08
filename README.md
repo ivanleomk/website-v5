@@ -28,24 +28,9 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 2. Add frontmatter with `title`, `date`, `author`, and `description`
 3. The blog registry is automatically generated before build/dev
 
-### Social Sharing with UTM Tracking
+### Source Tracking
 
-Blog posts include share buttons with automatic UTM parameter tracking for analytics:
-
-- **Share buttons**: X, LinkedIn, Threads with one-click sharing
-- **Copy link**: Copies URL with UTM params to clipboard
-- **Convention**: `utm_source={platform}&utm_medium=social&utm_campaign={slug}`
-
-For manual link sharing (e.g., social media schedulers):
-
-```typescript
-import { addUTMParams } from '@/lib/utm';
-
-const url = addUTMParams('https://ivanleo.com/blog/my-post', 'x');
-// → https://ivanleo.com/blog/my-post?utm_source=x&utm_medium=social&utm_campaign=my-post
-```
-
-See `docs/utm-tracking.md` for detailed usage and analytics setup.
+Blog posts include a simple copy link button that appends `?source=blog` for tracking shares. For manual sharing (e.g., social media schedulers), append `?source=blog` to URLs.
 
 ### SEO and Redirects
 

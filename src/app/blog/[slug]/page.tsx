@@ -107,8 +107,8 @@ export default async function Page({
           <MdxContent components={mdxComponents} />
         </article>
 
-        {/* Share buttons */}
-        <ShareButtons url={`https://ivanleo.com/blog/${slug}`} title={frontmatter.title} />
+        {/* Share button */}
+        <ShareButtons url={`https://ivanleo.com/blog/${slug}`} />
 
         {/* Newsletter signup */}
         <div className="mt-16 pt-8 border-t border-[#e5e5e5]">
