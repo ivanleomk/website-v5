@@ -25,10 +25,10 @@ export default function ShareButtons({ url }: ShareButtonsProps) {
   return (
     <button
       onClick={handleCopyLink}
-      className="mt-8 text-[13px] text-[#676767] hover:text-[#282828] transition-colors"
-      aria-label="Copy link to share"
+      className="mt-4 text-[13px] text-[#676767] hover:text-[#282828] transition-colors"
+      aria-label="Copy link for sharing"
     >
-      {copied ? "✓ Link copied" : "Copy link to share"}
+      {copied ? "✓ Link copied" : "Copy link for sharing"}
     </button>
   );
 }
