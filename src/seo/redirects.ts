@@ -93,6 +93,21 @@ export const DEAD_POST_REDIRECTS: Redirect[] = [
     destination: "/blog",
     permanent: true,
   },
+  {
+    source: "/blog/evals-after-rag",
+    destination: "/blog/building-reliable-llm-applications",
+    permanent: true,
+  },
+  {
+    source: "/blog/mcps-are-really-llm-microservices",
+    destination: "/blog",
+    permanent: true,
+  },
+  {
+    source: "/blog/three-styles-of-mcp-loading",
+    destination: "/blog",
+    permanent: true,
+  },
 ];
 
 /**
