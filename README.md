@@ -28,6 +28,10 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 2. Add frontmatter with `title`, `date`, `author`, and `description`
 3. The blog registry is automatically generated before build/dev
 
+### Source Tracking
+
+Blog posts include a simple copy link button that appends `?source=blog` for tracking shares. For manual sharing (e.g., social media schedulers), append `?source=blog` to URLs.
+
 ### SEO and Redirects
 
 Run SEO validation to check for conflicts:

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { blogPosts, getBlogPost } from "@/content/blog/registry";
 import TableOfContents from "./toc";
 import NewsletterSignup from "@/components/newsletter-signup";
+import ShareButtons from "@/components/share-buttons";
 import type { Metadata } from "next";
 
 export function generateStaticParams() {
@@ -94,6 +95,9 @@ export default async function Page({
           {" · "}
           <span>{formattedDate}</span>
         </div>
+        
+        {/* Share link */}
+        <ShareButtons url={`https://ivanleo.com/blog/${slug}`} />
       </header>
 
       {/* Body: article with optional TOC */}
