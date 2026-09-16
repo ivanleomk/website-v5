@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
-import { Newsreader } from "next/font/google";
+import { Geist_Mono, Newsreader } from "next/font/google";
 import Link from "next/link";
 import Script from "next/script";
 import "highlight.js/styles/github-dark.css";
+import "katex/dist/katex.min.css";
 import "./globals.css";
 
 const newsreader = Newsreader({
   variable: "--font-serif",
+  subsets: ["latin", "latin-ext"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
@@ -21,10 +27,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${newsreader.variable} antialiased`}>
+    <html
+      lang="en"
+      className={`${newsreader.variable} ${geistMono.variable} antialiased`}
+    >
       <body className="min-h-screen bg-white text-[#282828] flex flex-col">
         {/* Global Minimal Navigation */}
-        <header className="max-w-[800px] w-full mx-auto px-6 pt-10 pb-4 flex justify-between items-baseline">
+        <header className="max-w-[800px] w-full mx-auto px-6 pt-8 md:pt-10 pb-4 flex items-baseline justify-start gap-4 md:justify-between md:gap-0">
           <Link href="/" className="text-[14px] font-medium text-[#282828] no-underline hover:text-[#676767] transition-colors">
             Ivan Leo
           </Link>
