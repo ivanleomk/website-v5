@@ -1,0 +1,17 @@
+{
+  "name": "website-v5",
+  "install": "npm ci",
+  "terminals": [
+    {
+      "name": "next-dev",
+      "command": "npm run dev",
+      "description": "Next.js dev server (regenerates the blog registry via predev, then serves on http://localhost:3000)."
+    }
+  ],
+  "ports": [
+    {
+      "name": "next-dev",
+      "port": 3000
+    }
+  ]
+}
